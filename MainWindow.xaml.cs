@@ -184,6 +184,9 @@ namespace tetris
                 case Key.C:
                     gameState.HoldBlock();
                     break;
+                case Key.Space:
+                    gameState.DropBlock();
+                    break;
                 default:
                     return;     // only redraw if player pressed a key that actually does something
             }

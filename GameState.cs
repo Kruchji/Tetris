@@ -174,5 +174,37 @@ namespace tetris
             if (AutoMoveBlockDown()) Score++;    // Soft drop -> 1 point per cell
         }
 
+        // takes position and returns number of empty cells immediately below it
+        private int TileDropDistance(Position p)
+        {
+            int drop = 0;
+
+            while (GameGrid.IsEmpty(p.Row + drop + 1, p.Column)) drop++;
+
+            return drop;
+        }
+
+        // get drop distance of whole block (by taking minimum of all it's tiles)
+        public int BlockDropDistance()
+        {
+            int drop = GameGrid.Rows;
+
+            foreach (Position p in CurrentBlock.TilePositions())
+            {
+                drop = System.Math.Min(drop, TileDropDistance(p));
+            }
+
+            return drop;
+        }
+
+        // move current block down as many rows as possible and places it
+        public void DropBlock()
+        {
+            int dropDistance = BlockDropDistance();
+            Score += 2 * dropDistance;   // drop score is 2 points per cell dropped
+            CurrentBlock.Move(dropDistance, 0);
+            PlaceBlock();
+        }
+
     }
 }
