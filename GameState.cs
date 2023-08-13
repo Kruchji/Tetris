@@ -38,8 +38,9 @@ namespace tetris
         public bool GameOver { get; private set; }
 
         // scoring
-        public int Score { get; private set; }
+        public int Score { get; private set; } = 0;
         private readonly int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
+        public int Combo { get; private set; } = -1;  // TODO: display the current combo on screen
 
         // block holding
         public Block HeldBlock { get; private set; }
@@ -139,7 +140,19 @@ namespace tetris
                 GameGrid[p.Row, p.Column] = CurrentBlock.Id;
             }
 
-            Score += ClearedScoring[GameGrid.ClearFullRows()];   // check if any rows were completed
+            int rowsCleared = GameGrid.ClearFullRows();
+            Score += ClearedScoring[rowsCleared];   // add score according to the cleared rows
+            
+            // update combo
+            if (rowsCleared > 0)
+            {
+                Combo++;
+                Score += 50 * Combo;    // 50 * combo counter is the number of points awarded on line clear -> that's why combo starts at -1
+            }
+            else
+            {
+                Combo = -1; // reset combo when no line was cleared
+            }
 
             // get next block if game is not over
             if (IsGameOver())
