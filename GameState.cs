@@ -39,7 +39,7 @@ namespace tetris
 
         // scoring
         public int Score { get; private set; }
-        private int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
+        private readonly int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
 
         // block holding
         public Block HeldBlock { get; private set; }
