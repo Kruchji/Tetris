@@ -19,6 +19,17 @@ namespace tetris
             {
                 currentBlock = value;
                 currentBlock.Reset();
+
+                // try to move block automatically to visible area if possible
+                for (int i = 0; i < 2; i++)
+                {
+                    currentBlock.Move(1, 0);
+
+                    if (!BlockFits())
+                    {
+                        currentBlock.Move(-1, 0);
+                    }
+                }
             }
         }
 
