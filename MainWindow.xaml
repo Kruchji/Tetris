@@ -33,6 +33,7 @@
         Canvas is inside viewbox to scale with screen size change
         Margin sets margin at the bottom
         ClipToBounds hides elements outside Canvas -> like the first two invisible rows
+        510 pixels -> with 10 extra to see part of block outside of play area
         -->
         <Viewbox Grid.Row="1"
                  Grid.Column="1"
@@ -40,7 +41,7 @@
         <Canvas x:Name="GameCanvas"
                 Background="#101010"
                 Width="250"
-                Height="500"
+                Height="510"
                 ClipToBounds="True"
                 Loaded="GameCanvas_Loaded"/>
         </Viewbox>

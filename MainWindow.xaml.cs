@@ -75,7 +75,7 @@ namespace tetris
                     };
 
                     // adjust distance from top left of canvas
-                    Canvas.SetTop(imageControl, (r - 2) * cellSize);    // push top 2 hidden rows up outside canvas
+                    Canvas.SetTop(imageControl, (r - 2) * cellSize + 10);    // push top 2 hidden rows up outside canvas and account for 10 extra pixels (to peek)
                     Canvas.SetLeft(imageControl, c * cellSize);
 
                     // add it as UI child to canvas and save to array of all cells
