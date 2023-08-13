@@ -18,7 +18,7 @@ namespace tetris
             private set
             {
                 currentBlock = value;
-                currentBlock.Reset();
+                currentBlock.Reset();   // when set in any way (next or hold), use starting position instead of last
 
                 // try to move block automatically to visible area if possible
                 for (int i = 0; i < 2; i++)
@@ -36,14 +36,21 @@ namespace tetris
         public GameGrid GameGrid { get; }
         public BlockQueue BlockQueue { get; }
         public bool GameOver { get; private set; }
+
+        // scoring
         public int Score { get; private set; }
         private int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
+
+        // block holding
+        public Block HeldBlock { get; private set; }
+        public bool CanHold { get; private set; }
 
         public GameState()
         {
             GameGrid = new GameGrid(22, 10); // tetris board is 20x10, added two extra invisible rows at the top
             BlockQueue = new BlockQueue();
             CurrentBlock = BlockQueue.GetAndUpdate();
+            CanHold = true;     // held block is empty at start
         }
 
         // checks if the current block is in a legal position (empty space inside board)
@@ -55,6 +62,24 @@ namespace tetris
             }
 
             return true;
+        }
+
+        public void HoldBlock()
+        {
+            if (!CanHold) return;
+
+            if (HeldBlock == null)  // not holding anything
+            {
+                HeldBlock = CurrentBlock;
+                CurrentBlock = BlockQueue.GetAndUpdate();
+            }
+            else
+            {
+                // swap held and current block
+                (CurrentBlock, HeldBlock) = (HeldBlock, CurrentBlock);
+            }
+
+            CanHold = false;    // prevents spamming hold
         }
 
         // rotates the block if it is possible
@@ -124,6 +149,7 @@ namespace tetris
             else
             {
                 CurrentBlock = BlockQueue.GetAndUpdate();
+                CanHold = true;     // enable pressing hold again
             }
         }
 
