@@ -42,6 +42,11 @@ namespace tetris
         private readonly int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
         public int Combo { get; private set; } = -1;  // TODO: display the current combo on screen
 
+        // difficulty level
+        public int DiffLevel { get; private set; } = 1;
+        public int TotalRowsCleared { get; private set; } = 0;  // TODO: display number of cleared rows
+        private int NextClearedGoal = 3;    // number of lines to clear for next level
+
         // block holding
         public Block HeldBlock { get; private set; }
         public bool CanHold { get; private set; }
@@ -141,13 +146,22 @@ namespace tetris
             }
 
             int rowsCleared = GameGrid.ClearFullRows();
-            Score += ClearedScoring[rowsCleared];   // add score according to the cleared rows
+
+            // update difficulty level
+            TotalRowsCleared += rowsCleared;
+            if (TotalRowsCleared >= NextClearedGoal)
+            {
+                DiffLevel++;
+                NextClearedGoal += 1 + DiffLevel * 2;   // each difficulty requires 2 more line clears then previous one
+            }
+
+            Score += ClearedScoring[rowsCleared] * DiffLevel;   // add score according to the cleared rows
             
             // update combo
             if (rowsCleared > 0)
             {
                 Combo++;
-                Score += 50 * Combo;    // 50 * combo counter is the number of points awarded on line clear -> that's why combo starts at -1
+                Score += 50 * Combo * DiffLevel;    // 50 * combo counter is the number of points awarded on line clear -> that's why combo starts at -1
             }
             else
             {

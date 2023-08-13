@@ -167,7 +167,8 @@ namespace tetris
             // drop by 1 every 500 ms
             while (!gameState.GameOver)
             {
-                await Task.Delay(500);
+                int delay = (int)(1000 * Math.Pow(0.6, gameState.DiffLevel - 1));   // set lower delay based on difficulty level (based on: https://tetris.wiki/TETR.IO#Blitz)
+                await Task.Delay(delay);
                 gameState.AutoMoveBlockDown();
                 Draw(gameState);
             }
