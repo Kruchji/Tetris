@@ -37,7 +37,7 @@ namespace tetris
         public BlockQueue BlockQueue { get; }
         public bool GameOver { get; private set; }
 
-        // scoring
+        // scoring, based on: https://tetris.wiki/Scoring
         public int Score { get; private set; } = 0;
         private readonly int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
         public int Combo { get; private set; } = -1;  // TODO: display the current combo on screen
