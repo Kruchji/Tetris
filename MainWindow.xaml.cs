@@ -109,11 +109,19 @@ namespace tetris
             }
         }
 
-        // draws grid and current block
+        // preview next block
+        private void DrawNextBlock(BlockQueue blockQueue)
+        {
+            Block next = blockQueue.NextBlock;
+            NextImage.Source = blockImages[next.Id];
+        }
+
+        // draws grid, current and next block
         private void Draw(GameState gameState)
         {
             DrawGrid(gameState.GameGrid);
             DrawBlock(gameState.CurrentBlock);
+            DrawNextBlock(gameState.BlockQueue);
         }
 
         // async = waiting without blocking UI and inputs
