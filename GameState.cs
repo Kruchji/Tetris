@@ -36,6 +36,8 @@ namespace tetris
         public GameGrid GameGrid { get; }
         public BlockQueue BlockQueue { get; }
         public bool GameOver { get; private set; }
+        public int Score { get; private set; }
+        private int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
 
         public GameState()
         {
@@ -112,7 +114,7 @@ namespace tetris
                 GameGrid[p.Row, p.Column] = CurrentBlock.Id;
             }
 
-            GameGrid.ClearFullRows();   // check if any rows were completed
+            Score += ClearedScoring[GameGrid.ClearFullRows()];   // check if any rows were completed
 
             // get next block if game is not over
             if (IsGameOver())
@@ -126,7 +128,7 @@ namespace tetris
         }
 
         // moves block down by one if possible
-        public void MoveBlockDown()
+        public bool AutoMoveBlockDown()
         {
             CurrentBlock.Move(1, 0);
 
@@ -135,7 +137,15 @@ namespace tetris
             {
                 CurrentBlock.Move(-1, 0);
                 PlaceBlock();
+                return false;
             }
+            return true;
+        }
+
+        // moves block down by one if possible and adds score (soft dropping)
+        public void MoveBlockDown()
+        {
+            if (AutoMoveBlockDown()) Score++;    // Soft drop -> 1 point per cell
         }
 
     }

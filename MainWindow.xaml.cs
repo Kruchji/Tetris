@@ -116,12 +116,13 @@ namespace tetris
             NextImage.Source = blockImages[next.Id];
         }
 
-        // draws grid, current and next block
+        // draws grid, score, current and next block
         private void Draw(GameState gameState)
         {
             DrawGrid(gameState.GameGrid);
             DrawBlock(gameState.CurrentBlock);
             DrawNextBlock(gameState.BlockQueue);
+            ScoreText.Text = $"Score: {gameState.Score}";
         }
 
         // async = waiting without blocking UI and inputs
@@ -134,12 +135,13 @@ namespace tetris
             while (!gameState.GameOver)
             {
                 await Task.Delay(500);
-                gameState.MoveBlockDown();
+                gameState.AutoMoveBlockDown();
                 Draw(gameState);
             }
 
-            // when game ends -> display game over menu
+            // when game ends -> display game over menu and score
             GameOverMenu.Visibility = Visibility.Visible;
+            FinalScoreText.Text = $"Score: {gameState.Score}";
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
