@@ -207,6 +207,7 @@ namespace tetris
                 {
                     FinalScoreText1.Text = $"Left Player: {gameState1.Score}";
                     FinalScoreText1.FontSize = 25;
+                    FinalScoreText2.Visibility = Visibility.Visible;
                     FinalScoreText2.Text = $"Right Player: {gameState2.Score}";
 
                     if (gameState1.Score > gameState2.Score)
