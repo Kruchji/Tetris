@@ -8,7 +8,8 @@
         Title="Tetris" Height="600" Width="1200"
         MinWidth="1200" MinHeight="600"
         Foreground="White"
-        FontFamily="Segoe UI Light" FontSize="28"
+        FontFamily="Monospace" FontSize="28"
+        FontWeight="Bold"
         KeyDown="Window_KeyDown">
     <Grid x:Name="WholeGameGrid">
         <!--
@@ -42,7 +43,7 @@
             Grid.Row="1"
                  Grid.Column="1"
                  Margin="0,0,0,20">
-        <Canvas x:Name="GameCanvas1"
+            <Canvas x:Name="GameCanvas1"
                 Background="#101010"
                 Width="250"
                 Height="510"
@@ -117,11 +118,11 @@
 
         <StackPanel x:Name="DispNextBlock2"
             Grid.Row="1"
-    Grid.Column="5"
-    VerticalAlignment="Center"
-    HorizontalAlignment="Left">
+            Grid.Column="5"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Left">
             <TextBlock Text="Next"
-       TextAlignment="Center"/>
+                        TextAlignment="Center"/>
             <Image x:Name="NextImage2"
            Margin="20"
            Width="125"/>
@@ -131,22 +132,38 @@
         <Grid x:Name="GameOverMenu"
               Background="#CC000000"
               Grid.RowSpan="2"
-              Grid.ColumnSpan="3"
+              Grid.ColumnSpan="6"
               Visibility="Hidden">
             <StackPanel HorizontalAlignment="Center"
                           VerticalAlignment="Center">
-            <TextBlock Text="Game Over"
-                             FontSize="48"
-                             TextAlignment="Center"/>
-                <TextBlock x:Name="FinalScoreText"
-                       Text="Score: "
-                       FontSize="36"
+                <TextBlock Text="Game Over"
+                             FontSize="55"
+                             TextAlignment="Center"
+                             Foreground="#A400C4FF"
+                             Margin="0,0,0,70"/>
+                <TextBlock Text="Final Score"
+                         FontSize="35"
+                         TextAlignment="Center"
+                         TextDecorations="Underline"
+                         Margin="0,0,0,0"/>
+                <TextBlock x:Name="FinalScoreText1"
+                       Text="Left Player: "
+                       FontSize="25"
                        TextAlignment="Center"/>
+                <TextBlock x:Name="FinalScoreText2"
+                           Text="Right Player: "
+                           FontSize="25"
+                           TextAlignment="Center"/>
                 <Button Content="Play Again"
-                          Background="LightGreen"
-                          Margin="0,20,0,0"
-                          Padding="5"
+                          Background="Yellow"
+                          Margin="30,50,30,0"
+                          Padding="10"
                           Click="PlayAgain_Click"/>
+                <Button Content="Main Menu"
+                          Background="MediumSeaGreen"
+                          Margin="30,30,30,0"
+                          Padding="10"
+                          Click="MainMenu_Click"/>
             </StackPanel>
         </Grid>
 

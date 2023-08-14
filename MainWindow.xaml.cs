@@ -193,7 +193,19 @@ namespace tetris
             if (gameState1.GameOver && gameState2.GameOver)     // when both games end -> display game over menu and score
             {
                 GameOverMenu.Visibility = Visibility.Visible;
-                FinalScoreText.Text = $"Score: {gameState.Score}";
+                FinalScoreText1.Text = $"Left Player: {gameState1.Score}";
+                
+                FinalScoreText2.Text = $"Right Player: {gameState2.Score}";
+                if (gameState1.Score > gameState2.Score)
+                {
+                    FinalScoreText1.Foreground = Brushes.LawnGreen;
+                    FinalScoreText2.Foreground = Brushes.Red;
+                }
+                else
+                {
+                    FinalScoreText1.Foreground = Brushes.Red;
+                    FinalScoreText2.Foreground = Brushes.LawnGreen;
+                }
             }
         }
 
@@ -306,6 +318,16 @@ namespace tetris
 
         // clicked on play again button
         private async void PlayAgain_Click(object sender, RoutedEventArgs e)
+        {
+            // create new game, hide game over overlay
+            gameState1 = new GameState(1);
+            gameState2 = new GameState(2);
+            GameOverMenu.Visibility = Visibility.Hidden;
+
+            await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
+        }
+
+        private async void MainMenu_Click(object sender, RoutedEventArgs e)
         {
             // create new game, hide game over overlay
             gameState1 = new GameState(1);
