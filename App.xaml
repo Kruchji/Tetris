@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:tetris"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <FontFamily x:Key="Aquire">pack://application:,,,/Assets/#Aquire</FontFamily>
     </Application.Resources>
 </Application>

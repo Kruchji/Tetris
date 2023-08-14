@@ -30,7 +30,7 @@
         </Grid.ColumnDefinitions>
 
         <Grid.Background>
-            <ImageBrush ImageSource="Assets/Background.png"/>
+            <ImageBrush ImageSource="Assets/GameBackground.png"/>
         </Grid.Background>
 
         <!--
@@ -136,7 +136,7 @@
                 <TextBlock Text="Game Over"
                              FontSize="55"
                              TextAlignment="Center"
-                             Foreground="#A400DAFF"
+                             Foreground="#A40EDCFF"
                              Margin="0,0,0,70"/>
                 <TextBlock Text="Final Score"
                          FontSize="40"
@@ -155,12 +155,14 @@
                           Background="#FFFFCB29"
                           Margin="30,50,30,0"
                           Padding="10"
-                          Click="PlayAgain_Click"/>
+                          Click="PlayAgain_Click"
+                        FontFamily="{StaticResource Aquire}"/>
                 <Button Content="Main Menu"
                           Background="#FF23B546"
                           Margin="30,30,30,0"
                           Padding="10"
-                          Click="MainMenu_Click"/>
+                          Click="MainMenu_Click"
+                        FontFamily="{StaticResource Aquire}"/>
             </StackPanel>
         </Grid>
 
@@ -168,34 +170,40 @@
       Grid.RowSpan="2"
       Grid.ColumnSpan="6" Visibility="Visible">
             <Grid.Background>
-                <ImageBrush ImageSource="/Assets/Background.png"/>
+                <ImageBrush ImageSource="/Assets/MenuBackground.png"/>
             </Grid.Background>
             <StackPanel HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
+                  VerticalAlignment="Center"
+                        >
                 <TextBlock Text="Main Menu"
-                     FontSize="65"
+                     FontSize="75"
                      TextAlignment="Center"
-                     Foreground="#FF00D1FF"
-                     Margin="0,0,0,70"/>
+                     Foreground="Black"
+                     FontFamily="{StaticResource Aquire}"
+                     Margin="0,0,0,10"/>
                 <Button Content="1 Player"
-                          Margin="30,30,30,0"
+                          Margin="70,30,70,0"
                           Padding="10"
-                          Click="SoloButton_Click" Background="#FF089DFF"/>
+                          Click="SoloButton_Click" Background="#FF089DFF"
+                        FontFamily="{StaticResource Aquire}"/>
                 <Button Content="2 Players"
                           Background="#FF089DFF"
-                          Margin="30,30,30,0"
+                          Margin="70,30,70,0"
                           Padding="10"
-                          Click="DoubleButton_Click"/>
+                          Click="DoubleButton_Click"
+                        FontFamily="{StaticResource Aquire}"/>
                 <Button Content="vs Computer"
                       Background="#FF089DFF"
-                      Margin="30,30,30,0"
+                      Margin="70,30,70,0"
                       Padding="10"
-                      Click="ComputerButton_Click"/>
+                      Click="ComputerButton_Click"
+                        FontFamily="{StaticResource Aquire}"/>
                 <Button Content="Quit"
-                  Background="#FF9B0032"
-                  Margin="30,30,30,0"
+                  Background="#FF2CC561"
+                  Margin="70,30,70,0"
                   Padding="10"
-                  Click="QuitButton_Click"/>
+                  Click="QuitButton_Click"
+                        FontFamily="{StaticResource Aquire}"/>
             </StackPanel>
         </Grid>
 

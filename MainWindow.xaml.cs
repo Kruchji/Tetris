@@ -384,7 +384,7 @@ namespace tetris
             WholeGameGrid.ColumnDefinitions[4].Width = GridLength.Auto;
             WholeGameGrid.ColumnDefinitions[5].Width = new GridLength(1, GridUnitType.Star);
             Application.Current.MainWindow.MinWidth = 1200;
-            Application.Current.MainWindow.Width = 1200;
+            if (Application.Current.MainWindow.Width < 1200) Application.Current.MainWindow.Width = 1200;
 
 
             await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
