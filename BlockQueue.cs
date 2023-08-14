@@ -20,7 +20,7 @@ namespace tetris
             new ZBlock()
         };
 
-        private readonly Random random = new Random();
+        private readonly Random random = new Random(Guid.NewGuid().GetHashCode());  // more random board for 2 players
 
         // preview of the next coming block
         public Block NextBlock { get; private set; }        // TODO: replace with an array (and then display it)
