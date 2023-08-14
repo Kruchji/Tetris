@@ -47,8 +47,7 @@
                 Background="#101010"
                 Width="250"
                 Height="510"
-                ClipToBounds="True"
-                Loaded="GameCanvas1_Loaded"/>
+                ClipToBounds="True"/>
         </Viewbox>
 
         <Viewbox x:Name="GameViewbox2"
@@ -59,8 +58,7 @@
         Background="#101010"
         Width="250"
         Height="510"
-        ClipToBounds="True"
-        Loaded="GameCanvas2_Loaded"/>
+        ClipToBounds="True"/>
         </Viewbox>
 
         <!-- Score display -->
@@ -132,20 +130,19 @@
         <Grid x:Name="GameOverMenu"
               Background="#CC000000"
               Grid.RowSpan="2"
-              Grid.ColumnSpan="6"
-              Visibility="Hidden">
+              Grid.ColumnSpan="6" Visibility="Hidden">
             <StackPanel HorizontalAlignment="Center"
                           VerticalAlignment="Center">
                 <TextBlock Text="Game Over"
                              FontSize="55"
                              TextAlignment="Center"
-                             Foreground="#A400C4FF"
+                             Foreground="#A400DAFF"
                              Margin="0,0,0,70"/>
                 <TextBlock Text="Final Score"
                          FontSize="35"
                          TextAlignment="Center"
                          TextDecorations="Underline"
-                         Margin="0,0,0,0"/>
+                         Margin="0,0,0,0" Foreground="White"/>
                 <TextBlock x:Name="FinalScoreText1"
                        Text="Left Player: "
                        FontSize="25"
@@ -155,15 +152,50 @@
                            FontSize="25"
                            TextAlignment="Center"/>
                 <Button Content="Play Again"
-                          Background="Yellow"
+                          Background="#FFFFCB29"
                           Margin="30,50,30,0"
                           Padding="10"
                           Click="PlayAgain_Click"/>
                 <Button Content="Main Menu"
-                          Background="MediumSeaGreen"
+                          Background="#FF23B546"
                           Margin="30,30,30,0"
                           Padding="10"
                           Click="MainMenu_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid x:Name="MainMenu"
+      Grid.RowSpan="2"
+      Grid.ColumnSpan="6" Visibility="Visible">
+            <Grid.Background>
+                <ImageBrush ImageSource="/Assets/Background.png"/>
+            </Grid.Background>
+            <StackPanel HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+                <TextBlock Text="Main Menu"
+                     FontSize="65"
+                     TextAlignment="Center"
+                     Foreground="#FF00D1FF"
+                     Margin="0,0,0,70"/>
+                <Button Content="1 Player"
+                          Margin="30,30,30,0"
+                          Padding="10"
+                          Click="SoloButton_Click" Background="#FF089DFF"/>
+                <Button Content="2 Players"
+                          Background="#FF089DFF"
+                          Margin="30,30,30,0"
+                          Padding="10"
+                          Click="DoubleButton_Click"/>
+                <Button Content="vs Computer"
+                      Background="#FF089DFF"
+                      Margin="30,30,30,0"
+                      Padding="10"
+                      Click="ComputerButton_Click"/>
+                <Button Content="Quit"
+                  Background="#FF9B0032"
+                  Margin="30,30,30,0"
+                  Padding="10"
+                  Click="QuitButton_Click"/>
             </StackPanel>
         </Grid>
 

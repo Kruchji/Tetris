@@ -55,13 +55,14 @@ namespace tetris
         // ID of game
         public int gameID { get; private set; }
 
-        public GameState(int gameID)
+        public GameState(int gameID, bool started)
         {
             GameGrid = new GameGrid(22, 10); // tetris board is 20x10, added two extra invisible rows at the top
             BlockQueue = new BlockQueue();
             CurrentBlock = BlockQueue.GetAndUpdate();
             CanHold = true;     // held block is empty at start
             this.gameID = gameID;
+            GameOver = !started;    // set game over to true on not started game
         }
 
         // checks if the current block is in a legal position (empty space inside board)

@@ -50,8 +50,8 @@ namespace tetris
         private readonly Image[,] imageControls2;
 
         // new game
-        private GameState gameState1 = new GameState(1);
-        private GameState gameState2 = new GameState(2);
+        private GameState gameState1 = new GameState(1, false);
+        private GameState gameState2 = new GameState(2, false);
 
         public MainWindow()
         {
@@ -291,18 +291,24 @@ namespace tetris
             
         }
 
-        // when game canvas has loaded
-        private async void GameCanvas1_Loaded(object sender, RoutedEventArgs e)
+        // clicked on play again button
+        private async void PlayAgain_Click(object sender, RoutedEventArgs e)        // TODO: change to reflect game mode
         {
-            await GameLoop(gameState1, imageControls1);   // run game after load
-            //Application.Current.MainWindow.Width = 1200;
+            // create new game, hide game over overlay
+            gameState1 = new GameState(1, true);
+            gameState2 = new GameState(2, true);
+            GameOverMenu.Visibility = Visibility.Hidden;
 
+            await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
         }
 
-        private async void GameCanvas2_Loaded(object sender, RoutedEventArgs e)
+        private void MainMenu_Click(object sender, RoutedEventArgs e)
         {
-            await GameLoop(gameState2, imageControls2);     // TODO: dont forget to set game over bool
-            return;
+            GameOverMenu.Visibility = Visibility.Hidden;
+            MainMenu.Visibility = Visibility.Visible;
+
+            /*
+            // TODO: Application.Current.MainWindow.Width = 1200;
             GameViewbox2.Visibility = Visibility.Collapsed;
             ScoreText2.Visibility = Visibility.Collapsed;
             DispHoldBlock2.Visibility = Visibility.Collapsed;
@@ -310,31 +316,33 @@ namespace tetris
             WholeGameGrid.ColumnDefinitions[3].Width = new GridLength(0, GridUnitType.Pixel);
             WholeGameGrid.ColumnDefinitions[4].Width = new GridLength(0, GridUnitType.Pixel);
             WholeGameGrid.ColumnDefinitions[5].Width = new GridLength(0, GridUnitType.Pixel);
-
-            //await GameLoop(gameState);   // run game after load
-            //Application.Current.MainWindow.Width = 1200;
-
+             
+             */
         }
 
-        // clicked on play again button
-        private async void PlayAgain_Click(object sender, RoutedEventArgs e)
+        private void QuitButton_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();     // close game with quit button
+        }
+
+        private async void DoubleButton_Click(object sender, RoutedEventArgs e)
         {
             // create new game, hide game over overlay
-            gameState1 = new GameState(1);
-            gameState2 = new GameState(2);
-            GameOverMenu.Visibility = Visibility.Hidden;
+            gameState1 = new GameState(1, true);
+            gameState2 = new GameState(2, true);
+            MainMenu.Visibility = Visibility.Hidden;
 
             await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
         }
 
-        private async void MainMenu_Click(object sender, RoutedEventArgs e)
+        private void SoloButton_Click(object sender, RoutedEventArgs e)
         {
-            // create new game, hide game over overlay
-            gameState1 = new GameState(1);
-            gameState2 = new GameState(2);
-            GameOverMenu.Visibility = Visibility.Hidden;
 
-            await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
+        }
+
+        private void ComputerButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
