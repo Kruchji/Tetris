@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Media;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace tetris
 {
@@ -205,7 +207,7 @@ namespace tetris
             }
             
 
-            // drop by 1 every 500 ms
+            // drop by 1 automatically
             while (!gameState.GameOver)
             {
                 int delay = (int)(1000 * Math.Pow(0.6, gameState.DiffLevel - 1));   // set lower delay based on difficulty level (based on: https://tetris.wiki/TETR.IO#Blitz)
@@ -329,11 +331,11 @@ namespace tetris
         {
             HandleKeyPressesGame1(gameState1, e, imageControls1);
             HandleKeyPressesGame2(gameState2, e, imageControls2);
-            
+
         }
 
         // clicked on play again button
-        private async void PlayAgain_Click(object sender, RoutedEventArgs e)        // TODO: change to reflect game mode
+        private async void PlayAgain_Click(object sender, RoutedEventArgs e)
         {
             // create new game, hide game over overlay
             GameOverMenu.Visibility = Visibility.Hidden;
