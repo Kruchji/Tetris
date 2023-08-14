@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Media;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace tetris
 {
@@ -54,6 +57,9 @@ namespace tetris
 
         // ID of game
         public int gameID { get; private set; }
+
+        // sound effects
+        private SoundPlayer musicPlayer = new SoundPlayer(Properties.Resources.Clack);
 
         public GameState(int gameID, bool started)
         {
@@ -237,6 +243,8 @@ namespace tetris
             Score += 2 * dropDistance;   // drop score is 2 points per cell dropped
             CurrentBlock.Move(dropDistance, 0);
             PlaceBlock();
+
+            musicPlayer.Play();
         }
 
     }

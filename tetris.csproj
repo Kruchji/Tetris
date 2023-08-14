@@ -19,6 +19,7 @@
     <None Remove="Assets\Block-T.png" />
     <None Remove="Assets\Block-Z.png" />
     <None Remove="Assets\Icon.ico" />
+    <None Remove="Assets\Theme.wav" />
     <None Remove="Assets\TileBlue.png" />
     <None Remove="Assets\TileCyan.png" />
     <None Remove="Assets\TileEmpty.png" />
@@ -44,6 +45,7 @@
     <Resource Include="Assets\Block-T.png" />
     <Resource Include="Assets\Block-Z.png" />
     <Resource Include="Assets\Icon.ico" />
+    <Resource Include="Assets\Theme.wav" />
     <Resource Include="Assets\TileBlue.png" />
     <Resource Include="Assets\TileCyan.png" />
     <Resource Include="Assets\TileEmpty.png" />
@@ -52,6 +54,21 @@
     <Resource Include="Assets\TilePurple.png" />
     <Resource Include="Assets\TileRed.png" />
     <Resource Include="Assets\TileYellow.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

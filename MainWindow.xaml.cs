@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -45,6 +46,9 @@ namespace tetris
             new BitmapImage(new Uri("Assets/Block-Z.png", UriKind.Relative))
         };
 
+        // music
+        private MediaPlayer musicPlayer = new MediaPlayer();
+        
         private enum GameMode
         {
             solo,
@@ -181,13 +185,25 @@ namespace tetris
             TextField.Text = $"Score: {gameState.Score}";
             
         }
-            
+
+        private void Media_Ended(object sender, EventArgs e)
+        {
+            musicPlayer.Position = TimeSpan.Zero;
+            musicPlayer.Play();
+        }
 
         // async = waiting without blocking UI and inputs
         // draw UI and drop blocks
         private async Task GameLoop(GameState gameState, Image[,] imageControls)
         {
             Draw(gameState, imageControls);
+            if (gameState.gameID == 1)
+            {
+                musicPlayer.Open(new Uri("../../../Assets/Theme.wav", UriKind.Relative));
+                musicPlayer.MediaEnded += new EventHandler(Media_Ended);
+                musicPlayer.Play();
+            }
+            
 
             // drop by 1 every 500 ms
             while (!gameState.GameOver)
@@ -200,6 +216,7 @@ namespace tetris
 
             if (gameState1.GameOver && gameState2.GameOver)     // when both games end -> display game over menu and score
             {
+                musicPlayer.Stop();
                 GameOverMenu.Visibility = Visibility.Visible;
 
                 // dont display two scores in solo
