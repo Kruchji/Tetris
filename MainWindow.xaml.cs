@@ -46,19 +46,22 @@ namespace tetris
         };
 
 
-        private readonly Image[,] imageControls;
+        private readonly Image[,] imageControls1;
+        private readonly Image[,] imageControls2;
 
         // new game
-        private GameState gameState = new GameState();
+        private GameState gameState1 = new GameState(1);
+        private GameState gameState2 = new GameState(2);
 
         public MainWindow()
         {
             InitializeComponent();
-            imageControls = SetupGameCanvas(gameState.GameGrid);    // initialize game canvas
+            imageControls1 = SetupGameCanvas(gameState1.GameGrid, gameState1.gameID);    // initialize game canvas
+            imageControls2 = SetupGameCanvas(gameState2.GameGrid, gameState2.gameID);
         }
 
         // setup image of game grid
-        private Image[,] SetupGameCanvas(GameGrid grid)
+        private Image[,] SetupGameCanvas(GameGrid grid, int gameID)
         {
             Image[,] imageControls = new Image[grid.Rows, grid.Columns];    // size same as game grid
             int cellSize = 25;  // 500 px / 20 tiles
@@ -79,7 +82,10 @@ namespace tetris
                     Canvas.SetLeft(imageControl, c * cellSize);
 
                     // add it as UI child to canvas and save to array of all cells
-                    GameCanvas.Children.Add(imageControl);
+                    Canvas CanvasField = GameCanvas1;
+                    if (gameID == 2) CanvasField = GameCanvas2;
+
+                    CanvasField.Children.Add(imageControl);
                     imageControls[r, c] = imageControl;
                 }
             }
@@ -88,7 +94,7 @@ namespace tetris
         }
 
         // draw game grid
-        private void DrawGrid(GameGrid grid)
+        private void DrawGrid(GameGrid grid, Image[,] imageControls)
         {
             for (int r = 0; r < grid.Rows; r++)
             {
@@ -102,7 +108,7 @@ namespace tetris
         }
 
         // draw current block
-        private void DrawBlock(Block block)
+        private void DrawBlock(Block block, Image[,] imageControls)
         {
             foreach (Position p in block.TilePositions())
             {
@@ -112,27 +118,33 @@ namespace tetris
         }
 
         // preview next block
-        private void DrawNextBlock(BlockQueue blockQueue)
+        private void DrawNextBlock(BlockQueue blockQueue, int gameID)
         {
+            Image NextField = NextImage1;
+            if (gameID == 2) NextField = NextImage2;
+
             Block next = blockQueue.NextBlock;
-            NextImage.Source = blockImages[next.Id];
+            NextField.Source = blockImages[next.Id];
         }
 
         // preview held block
-        private void DrawHeldBlock(Block heldBlock)
+        private void DrawHeldBlock(Block heldBlock, int gameID)
         {
+            Image HoldField = HoldImage1;
+            if (gameID == 2) HoldField = HoldImage2;
+
             if (heldBlock == null)
             {
-                HoldImage.Source = blockImages[0];
+                HoldField.Source = blockImages[0];
             }
             else
             {
-                HoldImage.Source = blockImages[heldBlock.Id];
+                HoldField.Source = blockImages[heldBlock.Id];
             }
         }
 
         // draw ghost of where the block would end up if hard dropped
-        private void DrawGhostBlock(Block block)
+        private void DrawGhostBlock(Block block, Image[,] imageControls, GameState gameState)
         {
             int dropDistance = gameState.BlockDropDistance();
 
@@ -144,25 +156,30 @@ namespace tetris
         }
 
         // draws grid, score, current and next block
-        private void Draw(GameState gameState)
+        private void Draw(GameState gameState, Image[,] imageControls)
         {
-            DrawGrid(gameState.GameGrid);
+            DrawGrid(gameState.GameGrid, imageControls);
 
             // called before draw block so opacity is correct
-            DrawGhostBlock(gameState.CurrentBlock);
+            DrawGhostBlock(gameState.CurrentBlock, imageControls, gameState);
 
-            DrawBlock(gameState.CurrentBlock);
-            DrawNextBlock(gameState.BlockQueue);
-            DrawHeldBlock(gameState.HeldBlock);
+            DrawBlock(gameState.CurrentBlock, imageControls);
+            DrawNextBlock(gameState.BlockQueue, gameState.gameID);
+            DrawHeldBlock(gameState.HeldBlock, gameState.gameID);
+
+            TextBlock TextField = ScoreText1;
+            if (gameState.gameID == 2) TextField = ScoreText2;
+
+            TextField.Text = $"Score: {gameState.Score}";
             
-            ScoreText.Text = $"Score: {gameState.Score}";
         }
+            
 
         // async = waiting without blocking UI and inputs
         // draw UI and drop blocks
-        private async Task GameLoop()
+        private async Task GameLoop(GameState gameState, Image[,] imageControls)
         {
-            Draw(gameState);
+            Draw(gameState, imageControls);
 
             // drop by 1 every 500 ms
             while (!gameState.GameOver)
@@ -170,62 +187,132 @@ namespace tetris
                 int delay = (int)(1000 * Math.Pow(0.6, gameState.DiffLevel - 1));   // set lower delay based on difficulty level (based on: https://tetris.wiki/TETR.IO#Blitz)
                 await Task.Delay(delay);
                 gameState.AutoMoveBlockDown();
-                Draw(gameState);
+                Draw(gameState, imageControls);
             }
 
-            // when game ends -> display game over menu and score
-            GameOverMenu.Visibility = Visibility.Visible;
-            FinalScoreText.Text = $"Score: {gameState.Score}";
+            if (gameState1.GameOver && gameState2.GameOver)     // when both games end -> display game over menu and score
+            {
+                GameOverMenu.Visibility = Visibility.Visible;
+                FinalScoreText.Text = $"Score: {gameState.Score}";
+            }
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        private void HandleKeyPressesGame2(GameState gameState, KeyEventArgs e, Image[,] imageControls)
         {
-            if (gameState.GameOver) return;     // if game has ended -> ignore all keys
-
-            switch(e.Key)
+            if (!gameState.GameOver) // if game has ended -> ignore all keys
             {
-                case Key.Left:
-                    gameState.MoveBlockLeft();
-                    break;
-                case Key.Right:
-                    gameState.MoveBlockRight();
-                    break;
-                case Key.Down:
-                    gameState.MoveBlockDown();
-                    break;
-                case Key.Up:
-                    gameState.RotateBlockCW();
-                    break;
-                case Key.Z:
-                    gameState.RotateBlockCCW();
-                    break;
-                case Key.C:
-                    gameState.HoldBlock();
-                    break;
-                case Key.Space:
-                    gameState.DropBlock();
-                    break;
-                default:
-                    return;     // only redraw if player pressed a key that actually does something
-            }
+                bool pressed = true;
+                switch (e.Key)
+                {
+                    case Key.Left:
+                        gameState.MoveBlockLeft();
+                        break;
+                    case Key.Right:
+                        gameState.MoveBlockRight();
+                        break;
+                    case Key.Down:
+                        gameState.MoveBlockDown();
+                        break;
+                    case Key.NumPad2:
+                        gameState.RotateBlockCW();
+                        break;
+                    case Key.NumPad1:
+                        gameState.RotateBlockCCW();
+                        break;
+                    case Key.NumPad3:
+                        gameState.HoldBlock();
+                        break;
+                    case Key.Up:
+                        gameState.DropBlock();
+                        break;
+                    default:
+                        pressed = false;
+                        break;
+                }
 
-            Draw(gameState);
+                if (pressed) Draw(gameState, imageControls);      // only redraw if player pressed a key that actually does something
+            }
+        }
+
+        private void HandleKeyPressesGame1(GameState gameState, KeyEventArgs e, Image[,] imageControls)
+        {
+            if (!gameState.GameOver) // if game has ended -> ignore all keys
+            {
+                bool pressed = true;
+                switch (e.Key)
+                {
+                    case Key.A:
+                        gameState.MoveBlockLeft();
+                        break;
+                    case Key.D:
+                        gameState.MoveBlockRight();
+                        break;
+                    case Key.S:
+                        gameState.MoveBlockDown();
+                        break;
+                    case Key.J:
+                        gameState.RotateBlockCW();
+                        break;
+                    case Key.H:
+                        gameState.RotateBlockCCW();
+                        break;
+                    case Key.K:
+                        gameState.HoldBlock();
+                        break;
+                    case Key.Space:
+                        gameState.DropBlock();
+                        break;
+                    default:
+                        pressed = false;
+                        break;
+                }
+
+                if (pressed) Draw(gameState, imageControls);      // only redraw if player pressed a key that actually does something
+
+            }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)      // TODO: change input handling to activate immediately
+        {
+            HandleKeyPressesGame1(gameState1, e, imageControls1);
+            HandleKeyPressesGame2(gameState2, e, imageControls2);
+            
         }
 
         // when game canvas has loaded
-        private async void GameCanvas_Loaded(object sender, RoutedEventArgs e)
+        private async void GameCanvas1_Loaded(object sender, RoutedEventArgs e)
         {
-            await GameLoop();   // run game after load
+            await GameLoop(gameState1, imageControls1);   // run game after load
+            //Application.Current.MainWindow.Width = 1200;
+
+        }
+
+        private async void GameCanvas2_Loaded(object sender, RoutedEventArgs e)
+        {
+            await GameLoop(gameState2, imageControls2);     // TODO: dont forget to set game over bool
+            return;
+            GameViewbox2.Visibility = Visibility.Collapsed;
+            ScoreText2.Visibility = Visibility.Collapsed;
+            DispHoldBlock2.Visibility = Visibility.Collapsed;
+            DispNextBlock2.Visibility = Visibility.Collapsed;
+            WholeGameGrid.ColumnDefinitions[3].Width = new GridLength(0, GridUnitType.Pixel);
+            WholeGameGrid.ColumnDefinitions[4].Width = new GridLength(0, GridUnitType.Pixel);
+            WholeGameGrid.ColumnDefinitions[5].Width = new GridLength(0, GridUnitType.Pixel);
+
+            //await GameLoop(gameState);   // run game after load
+            //Application.Current.MainWindow.Width = 1200;
+
         }
 
         // clicked on play again button
         private async void PlayAgain_Click(object sender, RoutedEventArgs e)
         {
             // create new game, hide game over overlay
-            gameState = new GameState();
+            gameState1 = new GameState(1);
+            gameState2 = new GameState(2);
             GameOverMenu.Visibility = Visibility.Hidden;
 
-            await GameLoop();   // run new game
+            await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
         }
     }
 }

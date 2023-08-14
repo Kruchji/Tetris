@@ -51,12 +51,17 @@ namespace tetris
         public Block HeldBlock { get; private set; }
         public bool CanHold { get; private set; }
 
-        public GameState()
+
+        // ID of game
+        public int gameID { get; private set; }
+
+        public GameState(int gameID)
         {
             GameGrid = new GameGrid(22, 10); // tetris board is 20x10, added two extra invisible rows at the top
             BlockQueue = new BlockQueue();
             CurrentBlock = BlockQueue.GetAndUpdate();
             CanHold = true;     // held block is empty at start
+            this.gameID = gameID;
         }
 
         // checks if the current block is in a legal position (empty space inside board)
