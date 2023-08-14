@@ -45,6 +45,14 @@ namespace tetris
             new BitmapImage(new Uri("Assets/Block-Z.png", UriKind.Relative))
         };
 
+        private enum GameMode
+        {
+            solo,
+            twoplayer,
+            computer
+        }
+
+        private GameMode CurrentGameMode;
 
         private readonly Image[,] imageControls1;
         private readonly Image[,] imageControls2;
@@ -193,18 +201,33 @@ namespace tetris
             if (gameState1.GameOver && gameState2.GameOver)     // when both games end -> display game over menu and score
             {
                 GameOverMenu.Visibility = Visibility.Visible;
-                FinalScoreText1.Text = $"Left Player: {gameState1.Score}";
-                
-                FinalScoreText2.Text = $"Right Player: {gameState2.Score}";
-                if (gameState1.Score > gameState2.Score)
+
+                // dont display two scores in solo
+                if (CurrentGameMode != GameMode.solo)
                 {
-                    FinalScoreText1.Foreground = Brushes.LawnGreen;
-                    FinalScoreText2.Foreground = Brushes.Red;
+                    FinalScoreText1.Text = $"Left Player: {gameState1.Score}";
+                    FinalScoreText1.FontSize = 25;
+                    FinalScoreText2.Text = $"Right Player: {gameState2.Score}";
+
+                    if (gameState1.Score > gameState2.Score)
+                    {
+                        FinalScoreText1.Foreground = Brushes.LawnGreen;
+                        FinalScoreText2.Foreground = Brushes.Red;
+                    }
+                    else
+                    {
+                        FinalScoreText1.Foreground = Brushes.Red;
+                        FinalScoreText2.Foreground = Brushes.LawnGreen;
+                    }
                 }
                 else
                 {
-                    FinalScoreText1.Foreground = Brushes.Red;
-                    FinalScoreText2.Foreground = Brushes.LawnGreen;
+                    FinalScoreText1.Text = $"{gameState1.Score}";
+                    FinalScoreText1.Foreground = Brushes.Gold;
+                    FinalScoreText1.FontSize = 35;
+
+                    // hide second player score
+                    FinalScoreText2.Visibility = Visibility.Collapsed;
                 }
             }
         }
@@ -295,11 +318,25 @@ namespace tetris
         private async void PlayAgain_Click(object sender, RoutedEventArgs e)        // TODO: change to reflect game mode
         {
             // create new game, hide game over overlay
-            gameState1 = new GameState(1, true);
-            gameState2 = new GameState(2, true);
             GameOverMenu.Visibility = Visibility.Hidden;
 
-            await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
+            switch (CurrentGameMode)
+            {
+                case GameMode.solo:
+                    gameState1 = new GameState(1, true);
+
+                    await GameLoop(gameState1, imageControls1);
+                    break;
+                case GameMode.twoplayer:
+                    gameState1 = new GameState(1, true);
+                    gameState2 = new GameState(2, true);
+
+                    await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
+                    break;
+                case GameMode.computer:
+                    break;
+            }
+
         }
 
         private void MainMenu_Click(object sender, RoutedEventArgs e)
@@ -307,17 +344,7 @@ namespace tetris
             GameOverMenu.Visibility = Visibility.Hidden;
             MainMenu.Visibility = Visibility.Visible;
 
-            /*
-            // TODO: Application.Current.MainWindow.Width = 1200;
-            GameViewbox2.Visibility = Visibility.Collapsed;
-            ScoreText2.Visibility = Visibility.Collapsed;
-            DispHoldBlock2.Visibility = Visibility.Collapsed;
-            DispNextBlock2.Visibility = Visibility.Collapsed;
-            WholeGameGrid.ColumnDefinitions[3].Width = new GridLength(0, GridUnitType.Pixel);
-            WholeGameGrid.ColumnDefinitions[4].Width = new GridLength(0, GridUnitType.Pixel);
-            WholeGameGrid.ColumnDefinitions[5].Width = new GridLength(0, GridUnitType.Pixel);
-             
-             */
+            Application.Current.MainWindow.MinWidth = 800;
         }
 
         private void QuitButton_Click(object sender, RoutedEventArgs e)
@@ -331,17 +358,37 @@ namespace tetris
             gameState1 = new GameState(1, true);
             gameState2 = new GameState(2, true);
             MainMenu.Visibility = Visibility.Hidden;
+            CurrentGameMode = GameMode.twoplayer;
+
+            WholeGameGrid.ColumnDefinitions[3].Width = new GridLength(1, GridUnitType.Star);
+            WholeGameGrid.ColumnDefinitions[4].Width = GridLength.Auto;
+            WholeGameGrid.ColumnDefinitions[5].Width = new GridLength(1, GridUnitType.Star);
+            Application.Current.MainWindow.MinWidth = 1200;
+            Application.Current.MainWindow.Width = 1200;
+
 
             await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
         }
 
-        private void SoloButton_Click(object sender, RoutedEventArgs e)
+        private async void SoloButton_Click(object sender, RoutedEventArgs e)
         {
+            // create new game, hide game over overlay
+            gameState1 = new GameState(1, true);
+            MainMenu.Visibility = Visibility.Hidden;
+            CurrentGameMode = GameMode.solo;
+
+            WholeGameGrid.ColumnDefinitions[3].Width = new GridLength(0, GridUnitType.Pixel);
+            WholeGameGrid.ColumnDefinitions[4].Width = new GridLength(0, GridUnitType.Pixel);
+            WholeGameGrid.ColumnDefinitions[5].Width = new GridLength(0, GridUnitType.Pixel);
+            Application.Current.MainWindow.MinWidth = 800;
+
+            await GameLoop(gameState1, imageControls1);
 
         }
 
         private void ComputerButton_Click(object sender, RoutedEventArgs e)
         {
+            CurrentGameMode = GameMode.computer;
 
         }
     }

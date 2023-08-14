@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:tetris"
         mc:Ignorable="d"
         Title="Tetris" Height="600" Width="1200"
-        MinWidth="1200" MinHeight="600"
+        MinWidth="800" MinHeight="600"
         Foreground="White"
         FontFamily="Monospace" FontSize="28"
         FontWeight="Bold"
@@ -139,7 +139,7 @@
                              Foreground="#A400DAFF"
                              Margin="0,0,0,70"/>
                 <TextBlock Text="Final Score"
-                         FontSize="35"
+                         FontSize="40"
                          TextAlignment="Center"
                          TextDecorations="Underline"
                          Margin="0,0,0,0" Foreground="White"/>
