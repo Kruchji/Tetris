@@ -43,7 +43,9 @@ namespace tetris
         // scoring, based on: https://tetris.wiki/Scoring
         public int Score { get; private set; } = 0;
         private readonly int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
+        private readonly int[] TSpinScoring = { 400, 800, 1200, 1600 };
         public int Combo { get; private set; } = -1;
+        bool LastOperationRotation = false; // for detecting T-Spins
 
         // difficulty level
         public int DiffLevel { get; private set; } = 1;
@@ -97,6 +99,7 @@ namespace tetris
                 (CurrentBlock, HeldBlock) = (HeldBlock, CurrentBlock);
             }
 
+            LastOperationRotation = false;
             CanHold = false;    // prevents spamming hold
         }
 
@@ -107,17 +110,40 @@ namespace tetris
 
             if (!BlockFits())
             {
-                CurrentBlock.RotateCCW();
+                CurrentBlock.Move(0, 1);
+                if (!BlockFits())
+                {
+                    CurrentBlock.Move(0, -2);
+                    if (!BlockFits())
+                    {
+                        // cant rotate even when shifted to side -> revert back
+                        CurrentBlock.Move(0, 1);
+                        CurrentBlock.RotateCCW();
+                        LastOperationRotation = false;
+                    }
+                }
             }
         }
 
         public void RotateBlockCCW()
         {
             CurrentBlock.RotateCCW();
+            LastOperationRotation = true;
 
             if (!BlockFits())
             {
-                CurrentBlock.RotateCW();
+                CurrentBlock.Move(0, 1);
+                if (!BlockFits())
+                {
+                    CurrentBlock.Move(0, -2);
+                    if (!BlockFits())
+                    {
+                        // cant rotate even when shifted to side -> revert back
+                        CurrentBlock.Move(0, 1);
+                        CurrentBlock.RotateCW();
+                        LastOperationRotation = false;
+                    }
+                } 
             }
         }
 
@@ -130,6 +156,10 @@ namespace tetris
             {
                 CurrentBlock.Move(0, 1);
             }
+            else
+            {
+                LastOperationRotation = false;
+            }
         }
 
         public void MoveBlockRight()
@@ -139,6 +169,10 @@ namespace tetris
             if (!BlockFits())
             {
                 CurrentBlock.Move(0, -1);
+            }
+            else
+            {
+                LastOperationRotation = false;
             }
         }
 
@@ -167,6 +201,34 @@ namespace tetris
                 NextClearedGoal += 1 + DiffLevel * 2;   // each difficulty requires 2 more line clears then previous one
             }
 
+            // T-Spin scoring
+            if (CurrentBlock.Id == 6 && LastOperationRotation)   // is a T-Block and was just rotated
+            {
+                int fullEdgeTiles = 0;
+                if (GameGrid.IsInside(CurrentBlock.offset.Row, CurrentBlock.offset.Column)) 
+                {
+                    if (GameGrid[CurrentBlock.offset.Row, CurrentBlock.offset.Column] != 0) fullEdgeTiles++;
+                }
+                if (GameGrid.IsInside(CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column))
+                {
+                    if (GameGrid[CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column] != 0) fullEdgeTiles++;
+                }
+                if (GameGrid.IsInside(CurrentBlock.offset.Row, CurrentBlock.offset.Column + 2))
+                {
+                    if (GameGrid[CurrentBlock.offset.Row, CurrentBlock.offset.Column + 2] != 0) fullEdgeTiles++;
+                }
+                if (GameGrid.IsInside(CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column + 2))
+                {
+                    if (GameGrid[CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column + 2] != 0) fullEdgeTiles++;
+                }
+
+                // if at least 3 edge tiles are non empty -> is T-Spin
+                if (fullEdgeTiles >= 3)
+                {
+                    Score += (TSpinScoring[rowsCleared] * DiffLevel) - (ClearedScoring[rowsCleared] * DiffLevel);
+                }
+            }
+
             Score += ClearedScoring[rowsCleared] * DiffLevel;   // add score according to the cleared rows
             
             // update combo
@@ -188,6 +250,7 @@ namespace tetris
             else
             {
                 CurrentBlock = BlockQueue.GetAndUpdate();
+                LastOperationRotation = false;
                 CanHold = true;     // enable pressing hold again
             }
         }
@@ -204,6 +267,8 @@ namespace tetris
                 PlaceBlock();
                 return false;
             }
+
+            LastOperationRotation = false;
             return true;
         }
 
@@ -245,6 +310,7 @@ namespace tetris
             PlaceBlock();
 
             musicPlayer.Play();
+            LastOperationRotation = false;
         }
 
     }

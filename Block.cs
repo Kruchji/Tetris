@@ -19,7 +19,7 @@ namespace tetris
         public abstract int Id { get; }
 
         private int rotationState;  // how the block is rotated
-        private Position offset; // determines position of the block
+        public Position offset { get; } // determines position of the block
 
         public Block()
         {
