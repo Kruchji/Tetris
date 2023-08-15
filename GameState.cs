@@ -314,9 +314,26 @@ namespace tetris
             LastOperationRotation = false;
         }
 
+        private void TestPlaceBlock(GameGrid grid)
+        {
+            // add block to grid
+            foreach (Position p in CurrentBlock.TilePositions())
+            {
+                grid[p.Row, p.Column] = CurrentBlock.Id;
+            }
+        }
+
+        public int TestDropBlock(GameGrid grid)
+        {
+            int dropDistance = BlockDropDistance();
+            CurrentBlock.Move(dropDistance, 0);         // TODO: change current block handling for tests
+            TestPlaceBlock(grid);
+            return dropDistance;
+        }
+
         private (int, int, int) FindBestMove()
         {
-            (int maxRating, int maxPos, int maxRot) DropValues = (0, 0, 0);
+            (int maxRating, int maxPos, int maxRot) DropValues = (int.MinValue, 0, 0);
 
             // go through all rotations
             for (int n = 0; n < 4; n++)
@@ -328,7 +345,7 @@ namespace tetris
                 {
                     // clone grid and try to drop block
                     GameGrid TestGrid = (GameGrid)GameGrid.Clone();
-                    DropBlock(TestGrid);
+                    int droppedDistance = TestDropBlock(TestGrid);
 
                     int dropDistance = BlockDropDistance();             // how low block falls, bigger is better
                     int emptyLines = TestGrid.NumberOfEmptyLines();      // number of lines of empty space, bigger is better
@@ -338,7 +355,8 @@ namespace tetris
                     int totalHeightDiff = TestGrid.ColsHeightDiff();    // sum of differences in height of neighbouring columns, smaller is better
                     int wellCount = TestGrid.WellsCount();
 
-                    int moveRating = emptyLines + clearedLines * 40 + dropDistance - (holeCount * 3 + totalHeightDiff + wellCount);    // calculate rating of move from these stats
+                    int moveRating = emptyLines + clearedLines * 1000 + dropDistance - (holeCount * 3 + totalHeightDiff * 3 + wellCount * 20);    // calculate rating of move from these stats
+                    
 
                     if (DropValues.maxRating < moveRating)
                     {
@@ -347,60 +365,62 @@ namespace tetris
                         DropValues.maxPos = i;
                     }
 
+
+                    foreach (Position p in CurrentBlock.TilePositions())
+                    {
+                        TestGrid[p.Row, p.Column] = 0;
+                    }
+                    CurrentBlock.Move(-droppedDistance, 0);
+
                     MoveBlockLeft();
                 }
                 RotateBlockCW();
             }
 
+            Trace.WriteLine(DropValues.maxRating);      // TODO: fix board glitching and rating ratio + exception??
             return DropValues;
         }
 
         // finds next computer move and executes it
         public void MoveComputer()
         {
-
+            bool holdPress = false;
             (int maxRating, int maxPos, int maxRot) CurrMax = FindBestMove();
 
+            
             // try also next block or held block (and apply or revert change)
             if (HeldBlock == null)
             {
-                Block tmp = currentBlock;
-                currentBlock = BlockQueue.NextBlocks[0];
+                (currentBlock, BlockQueue.NextBlocks[0]) = (BlockQueue.NextBlocks[0], currentBlock);
+
                 (int maxRating, int maxPos, int maxRot) PotentialMax = FindBestMove();
-                if (PotentialMax.maxRating <= CurrMax.maxRating) 
-                { 
-                    currentBlock = tmp;
-                }
-                else
-                {
-                    CurrMax = PotentialMax;
-                    HeldBlock = tmp;
-                    CurrentBlock = BlockQueue.GetAndUpdate();
-                }
+                if (PotentialMax.maxRating > CurrMax.maxRating) holdPress = true;
+
+                (currentBlock, BlockQueue.NextBlocks[0]) = (BlockQueue.NextBlocks[0], currentBlock);
             }
             else
             {
-                Block tmp = currentBlock;
-                currentBlock = HeldBlock;
+                (currentBlock, HeldBlock) = (HeldBlock, currentBlock);
+
                 (int maxRating, int maxPos, int maxRot) PotentialMax = FindBestMove();
-                if (PotentialMax.maxRating <= CurrMax.maxRating)
-                {
-                    currentBlock = tmp;
-                }
-                else
-                {
-                    CurrMax = PotentialMax;
-                    currentBlock = tmp;
-                    HoldBlock();
-                }
+                if (PotentialMax.maxRating > CurrMax.maxRating) holdPress = true;
+
+                (currentBlock, HeldBlock) = (HeldBlock, currentBlock);
             }
-
-
-            for (int i = 0; i < GameGrid.Rows; i++) MoveBlockRight();
-            for (int n = 0; n < CurrMax.maxRot; n++) RotateBlockCW();
-            for (int i = 0; i < CurrMax.maxPos; i++) MoveBlockLeft();
             
-            DropBlock(GameGrid);
+            if (holdPress)
+            {
+                HoldBlock();
+            }
+            else
+            {
+                for (int i = 0; i < GameGrid.Rows; i++) MoveBlockRight();
+                for (int n = 0; n < CurrMax.maxRot; n++) RotateBlockCW();
+                for (int i = 0; i < CurrMax.maxPos; i++) MoveBlockLeft();
+
+                DropBlock(GameGrid);
+            }
+            
         }
 
     }
