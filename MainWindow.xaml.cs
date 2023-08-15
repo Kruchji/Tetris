@@ -134,11 +134,19 @@ namespace tetris
         // preview next block
         private void DrawNextBlock(BlockQueue blockQueue, int gameID)
         {
-            Image NextField = NextImage1;
-            if (gameID == 2) NextField = NextImage2;
+            if (gameID == 1) 
+            {
+                NextImage1Game1.Source = blockImages[blockQueue.NextBlocks[0].Id];
+                NextImage2Game1.Source = blockImages[blockQueue.NextBlocks[1].Id];
+                NextImage3Game1.Source = blockImages[blockQueue.NextBlocks[2].Id];
+            }
+            else
+            {
+                NextImage1Game2.Source = blockImages[blockQueue.NextBlocks[0].Id];
+                NextImage2Game2.Source = blockImages[blockQueue.NextBlocks[1].Id];
+                NextImage3Game2.Source = blockImages[blockQueue.NextBlocks[2].Id];
+            }
 
-            Block next = blockQueue.NextBlock;
-            NextField.Source = blockImages[next.Id];
         }
 
         // preview held block
@@ -169,6 +177,7 @@ namespace tetris
             }
         }
 
+        // get various statistics from gameState and display them on screen
         private void DrawTexts(GameState gameState)
         {
             if (gameState.gameID == 1)
@@ -342,7 +351,7 @@ namespace tetris
             }
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)      // TODO: change input handling to activate immediately
+        private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             HandleKeyPressesGame1(gameState1, e, imageControls1);
             HandleKeyPressesGame2(gameState2, e, imageControls2);

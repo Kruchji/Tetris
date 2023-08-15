@@ -160,9 +160,15 @@
             <TextBlock Text="Next"
                TextAlignment="Center"
                        Foreground="White"/>
-            <Image x:Name="NextImage1"
-                   Margin="20"
+            <Image x:Name="NextImage1Game1"
+                   Margin="20,10,20,10"
                    Width="125"/>
+            <Image x:Name="NextImage2Game1"
+               Margin="20,10,20,10"
+               Width="125"/>
+            <Image x:Name="NextImage3Game1"
+               Margin="20,10,20,10"
+               Width="125"/>
         </StackPanel>
 
         <StackPanel x:Name="DispNextBlock2"
@@ -173,9 +179,15 @@
             <TextBlock Text="Next"
                         TextAlignment="Center"
                        Foreground="White"/>
-            <Image x:Name="NextImage2"
-           Margin="20"
+            <Image x:Name="NextImage1Game2"
+           Margin="20,10,20,10"
            Width="125"/>
+            <Image x:Name="NextImage2Game2"
+            Margin="20,10,20,10"
+            Width="125"/>
+            <Image x:Name="NextImage3Game2"
+            Margin="20,10,20,10"
+            Width="125"/>
         </StackPanel>
 
         <!-- transparent Game Over menu with score and restart button -->
