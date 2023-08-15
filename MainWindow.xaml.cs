@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Media;
@@ -15,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using tetris.Previews;
 
 namespace tetris
 {
@@ -272,6 +274,42 @@ namespace tetris
 
                     // hide second player score
                     FinalScoreText2.Visibility = Visibility.Collapsed;
+
+                    // check if score is higher than any leaderboard score and add it
+                    var allLines = File.ReadAllLines(@"../../../HighScores.txt");
+                    string[] newLines = new string[allLines.Length];
+                    bool added = false;
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (!added && int.Parse(allLines[i].Split(' ')[0]) < gameState1.Score)
+                        {
+                            var dialog = new UserInput();
+                            if (dialog.ShowDialog() == true)    // returns when second window is closed
+                            {
+                                newLines[i] = $"{gameState1.Score} {dialog.ResponseText}";
+                            }
+                            else
+                            {
+                                // user closed input window -> register score as anonymous
+                                newLines[i] = $"{gameState1.Score} Anonymous";
+                            }
+                            
+                            added = true;
+                        }
+                        else
+                        {
+                            if (added)
+                            {
+                                newLines[i] = allLines[i-1];
+                            }
+                            else
+                            {
+                                newLines[i] = allLines[i];
+                            }
+                            
+                        }
+                    }
+                    File.WriteAllLines(@"../../../HighScores.txt", newLines);
                 }
             }
         }
@@ -386,6 +424,7 @@ namespace tetris
         private void MainMenu_Click(object sender, RoutedEventArgs e)
         {
             GameOverMenu.Visibility = Visibility.Hidden;
+            Leaderboards.Visibility = Visibility.Hidden;
             MainMenu.Visibility = Visibility.Visible;
 
             Application.Current.MainWindow.MinWidth = 800;
@@ -433,6 +472,20 @@ namespace tetris
         private void ComputerButton_Click(object sender, RoutedEventArgs e)
         {
             CurrentGameMode = GameMode.computer;
+
+        }
+
+        private void LeaderboardsButton_Click(object sender, RoutedEventArgs e)
+        {
+            Leaderboards.Visibility = Visibility.Visible;
+            MainMenu.Visibility = Visibility.Hidden;
+
+            var allHighscores = File.ReadAllLines(@"../../../HighScores.txt");
+            LeadPos1.Text = $"{allHighscores[0].Substring(allHighscores[0].Split(' ')[0].Length)}:  {allHighscores[0].Split(' ')[0]}";
+            LeadPos2.Text = $"{allHighscores[1].Substring(allHighscores[1].Split(' ')[0].Length)}:  {allHighscores[1].Split(' ')[0]}";
+            LeadPos3.Text = $"{allHighscores[2].Substring(allHighscores[2].Split(' ')[0].Length)}:  {allHighscores[2].Split(' ')[0]}";
+            LeadPos4.Text = $"{allHighscores[3].Substring(allHighscores[3].Split(' ')[0].Length)}:  {allHighscores[3].Split(' ')[0]}";
+            LeadPos5.Text = $"{allHighscores[4].Substring(allHighscores[4].Split(' ')[0].Length)}:  {allHighscores[4].Split(' ')[0]}";
 
         }
     }

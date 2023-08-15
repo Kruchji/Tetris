@@ -251,8 +251,7 @@
                 <ImageBrush ImageSource="/Assets/MenuBackground.png"/>
             </Grid.Background>
             <StackPanel HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                        >
+                  VerticalAlignment="Center">
 
                 <TextBlock Text="Main Menu"
                      FontSize="75"
@@ -261,7 +260,7 @@
                      FontFamily="{StaticResource Aquire}"
                      Margin="0,0,0,10"/>
                 <Button Content="1 Player"
-                          Margin="70,30,70,0"
+                          Margin="70,20,70,0"
                           Padding="10"
                           Click="SoloButton_Click"
                         FontFamily="{StaticResource Aquire}">
@@ -279,7 +278,7 @@
                     </Button.Resources>
                 </Button>
                 <Button Content="2 Players"
-                          Margin="70,30,70,0"
+                          Margin="70,20,70,0"
                           Padding="10"
                           Click="DoubleButton_Click"
                         FontFamily="{StaticResource Aquire}">
@@ -298,7 +297,7 @@
                 </Button>
 
                 <Button Content="vs Computer"
-                      Margin="70,30,70,0"
+                      Margin="70,20,70,0"
                       Padding="10"
                       Click="ComputerButton_Click"
                         FontFamily="{StaticResource Aquire}">
@@ -315,12 +314,99 @@
                         </Style>
                     </Button.Resources>
                 </Button>
+                <Button Content="Leaderboards"
+                      Margin="70,20,70,0"
+                      Padding="10"
+                      Click="LeaderboardsButton_Click"
+                        FontFamily="{StaticResource Aquire}">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="Cyan"/>
+                            <GradientStop Color="Black" Offset="1"/>
+                            <GradientStop Color="#FF348181" Offset="0.849"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="15"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
                 <Button Content="Quit"
                   
-                  Margin="70,30,70,0"
+                  Margin="70,20,70,0"
                   Padding="10"
                   Click="QuitButton_Click"
                         FontFamily="{StaticResource Aquire}">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#FF0CFC5F"/>
+                            <GradientStop Color="Black" Offset="1"/>
+                            <GradientStop Color="#FF28981E" Offset="0.863"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="15"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Leaderboards screen/overlay -->
+        <Grid x:Name="Leaderboards"
+Grid.RowSpan="2"
+Grid.ColumnSpan="6" Visibility="Hidden">
+            <Grid.Background>
+                <ImageBrush ImageSource="/Assets/GameBackground.png"/>
+            </Grid.Background>
+            <StackPanel HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+
+                <TextBlock Text="Leaderboards"
+               FontSize="55"
+               TextAlignment="Center"
+               Foreground="#FFDDBB00"
+               FontFamily="{StaticResource Aquire}"
+               Margin="0,0,0,60"/>
+
+                <TextBlock x:Name="LeadPos1"
+                    Text="Position 1"
+                        FontSize="25"
+                        TextAlignment="Center"
+                        Foreground="White"
+                        Margin="0,0,0,10"/>
+                <TextBlock x:Name="LeadPos2"
+                    Text="Position 2"
+                FontSize="25"
+                TextAlignment="Center"
+                Foreground="White"
+                Margin="0,0,0,10"/>
+                <TextBlock x:Name="LeadPos3"
+                    Text="Position 3"
+                FontSize="25"
+                TextAlignment="Center"
+                Foreground="White"
+                Margin="0,0,0,10"/>
+                <TextBlock x:Name="LeadPos4"
+                    Text="Position 4"
+                FontSize="25"
+                TextAlignment="Center"
+                Foreground="White"
+                Margin="0,0,0,10"/>
+                <TextBlock x:Name="LeadPos5"
+                    Text="Position 5"
+                FontSize="25"
+                TextAlignment="Center"
+                Foreground="White"
+                Margin="0,0,0,10"/>
+
+                <Button Content="Main Menu"
+            Margin="70,50,70,0"
+            Padding="10"
+            Click="MainMenu_Click"
+                  FontFamily="{StaticResource Aquire}">
                     <Button.Background>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                             <GradientStop Color="#FF0CFC5F"/>
