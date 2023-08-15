@@ -105,6 +105,51 @@
            Margin="20"
            Width="125"/>
         </StackPanel>
+        
+        <!-- Level, combo, cleared display -->
+        <StackPanel x:Name="InfoBlock1"
+            Grid.Row="1"
+            Grid.Column="0"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Center">
+            <TextBlock x:Name="LevelText1"
+                Text="Level:"
+                       Margin="0,5,0,5"
+               TextAlignment="Center"
+               Foreground="White"/>
+            <TextBlock x:Name="ComboText1"
+                Text="Combo:"
+                       Margin="0,5,0,5"
+               TextAlignment="Center"
+               Foreground="White"/>
+            <TextBlock x:Name="LinesText1"
+                Text="Lines:"
+                       Margin="0,5,0,5"
+               TextAlignment="Center"
+               Foreground="White"/>
+        </StackPanel>
+
+        <StackPanel x:Name="InfoBlock2"
+    Grid.Row="1"
+    Grid.Column="3"
+    VerticalAlignment="Top"
+    HorizontalAlignment="Center">
+            <TextBlock x:Name="LevelText2"
+        Text="Level:"
+               Margin="0,5,0,5"
+       TextAlignment="Center"
+       Foreground="White"/>
+            <TextBlock x:Name="ComboText2"
+        Text="Combo:"
+               Margin="0,5,0,5"
+       TextAlignment="Center"
+       Foreground="White"/>
+            <TextBlock x:Name="LinesText2"
+        Text="Lines:"
+               Margin="0,5,0,5"
+       TextAlignment="Center"
+       Foreground="White"/>
+        </StackPanel>
 
         <!-- Next block display -->
         <StackPanel x:Name="DispNextBlock1"

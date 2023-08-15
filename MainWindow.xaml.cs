@@ -169,6 +169,24 @@ namespace tetris
             }
         }
 
+        private void DrawTexts(GameState gameState)
+        {
+            if (gameState.gameID == 1)
+            {
+                ScoreText1.Text = $"Score: {gameState.Score}";
+                LevelText1.Text = $"Level: {gameState.DiffLevel}";
+                ComboText1.Text = $"Combo: {gameState.Combo + 1}"; ;
+                LinesText1.Text = $"Lines: {gameState.TotalRowsCleared}";
+            }
+            else
+            {
+                ScoreText2.Text = $"Score: {gameState.Score}";
+                LevelText2.Text = $"Level: {gameState.DiffLevel}";
+                ComboText2.Text = $"Combo: {gameState.Combo + 1}"; ;
+                LinesText2.Text = $"Lines: {gameState.TotalRowsCleared}";
+            }
+        }
+
         // draws grid, score, current and next block
         private void Draw(GameState gameState, Image[,] imageControls)
         {
@@ -181,11 +199,8 @@ namespace tetris
             DrawNextBlock(gameState.BlockQueue, gameState.gameID);
             DrawHeldBlock(gameState.HeldBlock, gameState.gameID);
 
-            TextBlock TextField = ScoreText1;
-            if (gameState.gameID == 2) TextField = ScoreText2;
+            DrawTexts(gameState);
 
-            TextField.Text = $"Score: {gameState.Score}";
-            
         }
 
         private void Media_Ended(object sender, EventArgs e)
