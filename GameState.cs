@@ -43,11 +43,11 @@ namespace tetris
         // scoring, based on: https://tetris.wiki/Scoring
         public int Score { get; private set; } = 0;
         private readonly int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
-        public int Combo { get; private set; } = -1;  // TODO: display the current combo on screen
+        public int Combo { get; private set; } = -1;
 
         // difficulty level
         public int DiffLevel { get; private set; } = 1;
-        public int TotalRowsCleared { get; private set; } = 0;  // TODO: display number of cleared rows
+        public int TotalRowsCleared { get; private set; } = 0;
         private int NextClearedGoal = 3;    // number of lines to clear for next level
 
         // block holding
