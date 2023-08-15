@@ -231,15 +231,24 @@ namespace tetris
                 musicPlayer.MediaEnded += new EventHandler(Media_Ended);
                 musicPlayer.Play();
             }
-            
 
+            await Task.Delay(500);
             // drop by 1 automatically
             while (!gameState.GameOver)
             {
-                int delay = (int)(1000 * Math.Pow(0.6, gameState.DiffLevel - 1));   // set lower delay based on difficulty level (based on: https://tetris.wiki/TETR.IO#Blitz)
+                int delay = (int)(500 * Math.Pow(0.6, gameState.DiffLevel - 1));   // set lower delay based on difficulty level (based on: https://tetris.wiki/TETR.IO#Blitz)
                 await Task.Delay(delay);
                 gameState.AutoMoveBlockDown();
                 Draw(gameState, imageControls);
+                await Task.Delay(delay);        // divide delay so computer moves between movement in loop
+
+                // move computer player
+                if (CurrentGameMode == GameMode.computer && !gameState2.GameOver && gameState == gameState2)
+                { 
+                    gameState.MoveComputer();
+                    Draw(gameState, imageControls);
+                }
+
             }
 
             if (gameState1.GameOver && gameState2.GameOver)     // when both games end -> display game over menu and score
@@ -340,7 +349,7 @@ namespace tetris
                         gameState.HoldBlock();
                         break;
                     case Key.Up:
-                        gameState.DropBlock();
+                        gameState.DropBlock(gameState.GameGrid);
                         break;
                     default:
                         pressed = false;
@@ -377,7 +386,7 @@ namespace tetris
                         gameState.HoldBlock();
                         break;
                     case Key.Space:
-                        gameState.DropBlock();
+                        gameState.DropBlock(gameState.GameGrid);
                         break;
                     default:
                         pressed = false;
@@ -392,7 +401,7 @@ namespace tetris
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             HandleKeyPressesGame1(gameState1, e, imageControls1);
-            HandleKeyPressesGame2(gameState2, e, imageControls2);
+            if (CurrentGameMode == GameMode.twoplayer) HandleKeyPressesGame2(gameState2, e, imageControls2);
 
         }
 
@@ -416,6 +425,10 @@ namespace tetris
                     await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
                     break;
                 case GameMode.computer:
+                    gameState1 = new GameState(1, true);
+                    gameState2 = new GameState(2, true);
+
+                    await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2));
                     break;
             }
 
@@ -435,6 +448,15 @@ namespace tetris
             Application.Current.Shutdown();     // close game with quit button
         }
 
+        private void RestoreDoubleBoards()
+        {
+            WholeGameGrid.ColumnDefinitions[3].Width = new GridLength(1, GridUnitType.Star);
+            WholeGameGrid.ColumnDefinitions[4].Width = GridLength.Auto;
+            WholeGameGrid.ColumnDefinitions[5].Width = new GridLength(1, GridUnitType.Star);
+            Application.Current.MainWindow.MinWidth = 1200;
+            if (Application.Current.MainWindow.Width < 1200) Application.Current.MainWindow.Width = 1200;
+        }
+
         private async void DoubleButton_Click(object sender, RoutedEventArgs e)
         {
             // create new game, hide game over overlay
@@ -443,12 +465,7 @@ namespace tetris
             MainMenu.Visibility = Visibility.Hidden;
             CurrentGameMode = GameMode.twoplayer;
 
-            WholeGameGrid.ColumnDefinitions[3].Width = new GridLength(1, GridUnitType.Star);
-            WholeGameGrid.ColumnDefinitions[4].Width = GridLength.Auto;
-            WholeGameGrid.ColumnDefinitions[5].Width = new GridLength(1, GridUnitType.Star);
-            Application.Current.MainWindow.MinWidth = 1200;
-            if (Application.Current.MainWindow.Width < 1200) Application.Current.MainWindow.Width = 1200;
-
+            RestoreDoubleBoards();
 
             await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
         }
@@ -469,10 +486,16 @@ namespace tetris
 
         }
 
-        private void ComputerButton_Click(object sender, RoutedEventArgs e)
+        private async void ComputerButton_Click(object sender, RoutedEventArgs e)
         {
             CurrentGameMode = GameMode.computer;
+            gameState1 = new GameState(1, true);
+            gameState2 = new GameState(2, true);
+            MainMenu.Visibility = Visibility.Hidden;
 
+            RestoreDoubleBoards();
+
+            await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2));
         }
 
         private void LeaderboardsButton_Click(object sender, RoutedEventArgs e)

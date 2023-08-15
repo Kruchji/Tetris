@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Media;
 using System.Security.Policy;
@@ -183,15 +184,15 @@ namespace tetris
         }
 
         // called when block cannot be moved down
-        private void PlaceBlock()
+        private void PlaceBlock(GameGrid grid)
         {
             // add block to grid
             foreach (Position p in CurrentBlock.TilePositions())
             {
-                GameGrid[p.Row, p.Column] = CurrentBlock.Id;
+                grid[p.Row, p.Column] = CurrentBlock.Id;
             }
 
-            int rowsCleared = GameGrid.ClearFullRows();
+            int rowsCleared = grid.ClearFullRows();
 
             // update difficulty level
             TotalRowsCleared += rowsCleared;
@@ -205,21 +206,21 @@ namespace tetris
             if (CurrentBlock.Id == 6 && LastOperationRotation)   // is a T-Block and was just rotated
             {
                 int fullEdgeTiles = 0;
-                if (GameGrid.IsInside(CurrentBlock.offset.Row, CurrentBlock.offset.Column)) 
+                if (grid.IsInside(CurrentBlock.offset.Row, CurrentBlock.offset.Column)) 
                 {
-                    if (GameGrid[CurrentBlock.offset.Row, CurrentBlock.offset.Column] != 0) fullEdgeTiles++;
+                    if (grid[CurrentBlock.offset.Row, CurrentBlock.offset.Column] != 0) fullEdgeTiles++;
                 }
-                if (GameGrid.IsInside(CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column))
+                if (grid.IsInside(CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column))
                 {
-                    if (GameGrid[CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column] != 0) fullEdgeTiles++;
+                    if (grid[CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column] != 0) fullEdgeTiles++;
                 }
-                if (GameGrid.IsInside(CurrentBlock.offset.Row, CurrentBlock.offset.Column + 2))
+                if (grid.IsInside(CurrentBlock.offset.Row, CurrentBlock.offset.Column + 2))
                 {
-                    if (GameGrid[CurrentBlock.offset.Row, CurrentBlock.offset.Column + 2] != 0) fullEdgeTiles++;
+                    if (grid[CurrentBlock.offset.Row, CurrentBlock.offset.Column + 2] != 0) fullEdgeTiles++;
                 }
-                if (GameGrid.IsInside(CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column + 2))
+                if (grid.IsInside(CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column + 2))
                 {
-                    if (GameGrid[CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column + 2] != 0) fullEdgeTiles++;
+                    if (grid[CurrentBlock.offset.Row + 2, CurrentBlock.offset.Column + 2] != 0) fullEdgeTiles++;
                 }
 
                 // if at least 3 edge tiles are non empty -> is T-Spin
@@ -264,7 +265,7 @@ namespace tetris
             if (!BlockFits())
             {
                 CurrentBlock.Move(-1, 0);
-                PlaceBlock();
+                PlaceBlock(GameGrid);
                 return false;
             }
 
@@ -302,15 +303,104 @@ namespace tetris
         }
 
         // move current block down as many rows as possible and places it
-        public void DropBlock()
+        public void DropBlock(GameGrid grid)
         {
             int dropDistance = BlockDropDistance();
             Score += 2 * dropDistance;   // drop score is 2 points per cell dropped
             CurrentBlock.Move(dropDistance, 0);
-            PlaceBlock();
+            PlaceBlock(grid);
 
             musicPlayer.Play();
             LastOperationRotation = false;
+        }
+
+        private (int, int, int) FindBestMove()
+        {
+            (int maxRating, int maxPos, int maxRot) DropValues = (0, 0, 0);
+
+            // go through all rotations
+            for (int n = 0; n < 4; n++)
+            {
+                // start always to the right
+                for (int i = 0; i < GameGrid.Rows; i++) MoveBlockRight();
+                // go through each position and calculate it's score
+                for (int i = 0; i < GameGrid.Rows; i++)
+                {
+                    // clone grid and try to drop block
+                    GameGrid TestGrid = (GameGrid)GameGrid.Clone();
+                    DropBlock(TestGrid);
+
+                    int dropDistance = BlockDropDistance();             // how low block falls, bigger is better
+                    int emptyLines = TestGrid.NumberOfEmptyLines();      // number of lines of empty space, bigger is better
+                    int clearedLines = TestGrid.NumberOfFullLines();     // number of lines that would be cleared, bigger is better
+
+                    int holeCount = TestGrid.HolesInBoard();        // how many empty tiles below non-empty tile, smaller is better
+                    int totalHeightDiff = TestGrid.ColsHeightDiff();    // sum of differences in height of neighbouring columns, smaller is better
+                    int wellCount = TestGrid.WellsCount();
+
+                    int moveRating = emptyLines + clearedLines * 40 + dropDistance - (holeCount * 3 + totalHeightDiff + wellCount);    // calculate rating of move from these stats
+
+                    if (DropValues.maxRating < moveRating)
+                    {
+                        DropValues.maxRating = moveRating;
+                        DropValues.maxRot = n;
+                        DropValues.maxPos = i;
+                    }
+
+                    MoveBlockLeft();
+                }
+                RotateBlockCW();
+            }
+
+            return DropValues;
+        }
+
+        // finds next computer move and executes it
+        public void MoveComputer()
+        {
+
+            (int maxRating, int maxPos, int maxRot) CurrMax = FindBestMove();
+
+            // try also next block or held block (and apply or revert change)
+            if (HeldBlock == null)
+            {
+                Block tmp = currentBlock;
+                currentBlock = BlockQueue.NextBlocks[0];
+                (int maxRating, int maxPos, int maxRot) PotentialMax = FindBestMove();
+                if (PotentialMax.maxRating <= CurrMax.maxRating) 
+                { 
+                    currentBlock = tmp;
+                }
+                else
+                {
+                    CurrMax = PotentialMax;
+                    HeldBlock = tmp;
+                    CurrentBlock = BlockQueue.GetAndUpdate();
+                }
+            }
+            else
+            {
+                Block tmp = currentBlock;
+                currentBlock = HeldBlock;
+                (int maxRating, int maxPos, int maxRot) PotentialMax = FindBestMove();
+                if (PotentialMax.maxRating <= CurrMax.maxRating)
+                {
+                    currentBlock = tmp;
+                }
+                else
+                {
+                    CurrMax = PotentialMax;
+                    currentBlock = tmp;
+                    HoldBlock();
+                }
+            }
+
+
+            for (int i = 0; i < GameGrid.Rows; i++) MoveBlockRight();
+            for (int n = 0; n < CurrMax.maxRot; n++) RotateBlockCW();
+            for (int i = 0; i < CurrMax.maxPos; i++) MoveBlockLeft();
+            
+            DropBlock(GameGrid);
         }
 
     }

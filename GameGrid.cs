@@ -28,6 +28,10 @@ namespace tetris
             Columns = columns;
             grid = new int[rows, columns];
         }
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
 
         // checks if given row and column is inside the grid
         public bool IsInside(int r, int c)
@@ -99,6 +103,93 @@ namespace tetris
             }
 
             return cleared;
+        }
+
+        // counts holes in one column
+        private int HolesInColumn(int c)
+        {
+            bool firstTile = false;
+            int holes = 0;
+            for (int r = 0; r < Rows; r++)
+            {
+                if (grid[r, c] == 0 && firstTile) holes++;
+                if (grid[r, c] != 0 && !firstTile) firstTile = true;
+            }
+            return holes;
+        }
+
+        // counts holes in the board, holes are empty tiles below non-empty cells
+        public int HolesInBoard()
+        {
+            int holes = 0;
+            for (int c = 0; c < Columns; c++)
+            {
+                holes += HolesInColumn(c);
+            }
+            return holes;
+        }
+
+        // gets height of column
+        private int ColumnHeight(int c)
+        {
+            for (int r = 0; r < Rows; r++)
+            {
+                if (grid[r, c] != 0) return (Rows - r);
+            }
+            return 0;
+        }
+
+        // gets sum of differences between heights of neighbouring columns
+        public int ColsHeightDiff()
+        {
+            int previousHeight = ColumnHeight(0);
+            int totalDiffSum = 0;
+            for (int c = 1; c < Columns; c++)
+            {
+                int currHeight = ColumnHeight(c);
+                totalDiffSum += Math.Abs(ColumnHeight(c) - previousHeight);
+                previousHeight = currHeight;
+            }
+            return totalDiffSum;
+        }
+
+        public int WellsCount()
+        {
+            int wells = 0;
+
+            int previousHeight1 = ColumnHeight(0);
+            int previousHeight2 = ColumnHeight(1);
+            for (int c = 2; c < Columns; c++)
+            {
+                int currHeight = ColumnHeight(c);
+
+                if ((previousHeight1 - previousHeight2) + (currHeight - previousHeight2) >= 6) wells++;     // well = hole at least 3 deep (diff 3 + 3 = 6)
+
+                previousHeight1 = previousHeight2;
+                previousHeight2 = currHeight;
+            }
+
+            return wells;
+        }
+
+        public int NumberOfFullLines()
+        {
+            int full = 0;
+            for (int i = 0; i < Rows; i++)
+            {
+                if (IsRowFull(i)) full++;
+            }
+            return full;
+        }
+
+        public int NumberOfEmptyLines()
+        {
+            int empty = 0;
+            for (int i = 0; i < Rows; i++)
+            {
+                if (IsRowEmpty(i)) empty++;
+            }
+            return empty;
         }
 
     }
