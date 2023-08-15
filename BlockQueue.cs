@@ -22,7 +22,7 @@ namespace tetris
 
         private readonly Random random = new Random(Guid.NewGuid().GetHashCode());  // more random board for 2 players
 
-        // preview of the next coming block
+        // preview of the next coming blocks
         public List<Block> NextBlocks { get; private set; }
 
         // picks a random block
