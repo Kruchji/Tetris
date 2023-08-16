@@ -25,10 +25,6 @@ namespace tetris
         {
             offset = new Position(StartOffset.Row, StartOffset.Column); // place block on starting position
         }
-        public object Clone()
-        {
-            return this.MemberwiseClone();
-        }
 
         // get tiles occupied by block in its current rotation and position
         public IEnumerable<Position> TilePositions()

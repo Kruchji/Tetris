@@ -30,7 +30,16 @@ namespace tetris
         }
         public object Clone()
         {
-            return this.MemberwiseClone();
+            // create new grid and copy this grid content into it
+            GameGrid NewGrid = new GameGrid(Rows, Columns);
+            for (int r = 0; r < Rows; r++)
+            {
+                for (int c = 0; c < Columns; c++)
+                {
+                    NewGrid.grid[r, c] = grid[r, c];
+                }
+            }
+            return NewGrid;
         }
 
         // checks if given row and column is inside the grid

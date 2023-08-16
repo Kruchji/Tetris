@@ -14,7 +14,7 @@ namespace tetris
     {
         private Block currentBlock;
 
-        public Block CurrentBlock           // TODO: change name (capital C)
+        public Block CurrentBlock           // TODO: change name (from capital C)
         {
             get => currentBlock;
 
@@ -126,7 +126,7 @@ namespace tetris
                                 CurrentBlock.Move(0, 4);
                                 if (!BlockFits())
                                 {
-                        // cant rotate even when shifted to side -> revert back
+                                    // cant rotate even when shifted to side -> revert back
                                     CurrentBlock.Move(0, -2);
                                     CurrentBlock.RotateCCW();
                                     LastOperationRotation = false;
@@ -136,14 +136,14 @@ namespace tetris
                         else
                         {
                             // cant rotate even when shifted to side -> revert back
-                        CurrentBlock.Move(0, 1);
-                        CurrentBlock.RotateCCW();
-                        LastOperationRotation = false;
-                    }
+                            CurrentBlock.Move(0, 1);
+                            CurrentBlock.RotateCCW();
+                            LastOperationRotation = false;
+                        }
 
+                    }
                 }
             }
-        }
         }
 
         public void RotateBlockCCW()
@@ -168,7 +168,7 @@ namespace tetris
                                 CurrentBlock.Move(0, 4);
                                 if (!BlockFits())
                                 {
-                        // cant rotate even when shifted to side -> revert back
+                                    // cant rotate even when shifted to side -> revert back
                                     CurrentBlock.Move(0, -2);
                                     CurrentBlock.RotateCW();
                                     LastOperationRotation = false;
@@ -178,14 +178,14 @@ namespace tetris
                         else
                         {
                             // cant rotate even when shifted to side -> revert back
-                        CurrentBlock.Move(0, 1);
-                        CurrentBlock.RotateCW();
-                        LastOperationRotation = false;
-                    }
+                            CurrentBlock.Move(0, 1);
+                            CurrentBlock.RotateCW();
+                            LastOperationRotation = false;
+                        }
                         
+                    }
                 } 
             }
-        }
         }
 
         // moves left and right if it is possible
@@ -383,11 +383,12 @@ namespace tetris
                 // go through each position and calculate it's score
                 for (int i = 0; i < GameGrid.Rows; i++)
                 {
+                    int dropDistance = BlockDropDistance();             // how low block falls, bigger is better
+
                     // clone grid and try to drop block
                     GameGrid TestGrid = (GameGrid)GameGrid.Clone();
                     int droppedDistance = TestDropBlock(TestGrid);
 
-                    int dropDistance = BlockDropDistance();             // how low block falls, bigger is better
                     int emptyLines = TestGrid.NumberOfEmptyLines();      // number of lines of empty space, bigger is better
                     int clearedLines = TestGrid.NumberOfFullLines();     // number of lines that would be cleared, bigger is better
 
@@ -395,6 +396,8 @@ namespace tetris
                     int totalHeightDiff = TestGrid.ColsHeightDiff();    // sum of differences in height of neighbouring columns, smaller is better
                     int wellCount = TestGrid.WellsCount();
 
+
+                    // TODO: change ratio of rating variables
                     int moveRating = emptyLines + clearedLines * 1000 + dropDistance - (holeCount * 3 + totalHeightDiff * 3 + wellCount * 20);    // calculate rating of move from these stats
                     
 
@@ -404,7 +407,6 @@ namespace tetris
                         DropValues.maxRot = n;
                         DropValues.maxPos = i;
                     }
-
 
                     foreach (Position p in CurrentBlock.TilePositions())
                     {
@@ -417,9 +419,13 @@ namespace tetris
                 RotateBlockCW();
             }
 
-            Trace.WriteLine(DropValues.maxRating);      // TODO: fix board glitching and rating ratio + exception??
             return DropValues;
         }
+
+        // track if computer pressed Hold on last move so it can't press it again (and stall the game)
+        // theoretically not required but here it fixes some edge cases
+        // example: both ratings are so close that after swap the position is different1 by 1 or 2 tiles and it tries to swap again
+        private bool lastMoveHold = false;
 
         // finds next computer move and executes it
         public void MoveComputer()
@@ -427,38 +433,43 @@ namespace tetris
             bool holdPress = false;
             (int maxRating, int maxPos, int maxRot) CurrMax = FindBestMove();
 
-            
+
             // try also next block or held block (and apply or revert change)
             if (HeldBlock == null)
             {
-                (currentBlock, BlockQueue.NextBlocks[0]) = (BlockQueue.NextBlocks[0], currentBlock);
+                Block tmp = currentBlock;
+                currentBlock = BlockQueue.NextBlocks[0];
 
                 (int maxRating, int maxPos, int maxRot) PotentialMax = FindBestMove();
                 if (PotentialMax.maxRating > CurrMax.maxRating) holdPress = true;
 
-                (currentBlock, BlockQueue.NextBlocks[0]) = (BlockQueue.NextBlocks[0], currentBlock);
+                currentBlock = tmp;
             }
             else
             {
-                (currentBlock, HeldBlock) = (HeldBlock, currentBlock);
+                Block tmp = currentBlock;
+                currentBlock = HeldBlock;
 
                 (int maxRating, int maxPos, int maxRot) PotentialMax = FindBestMove();
                 if (PotentialMax.maxRating > CurrMax.maxRating) holdPress = true;
 
-                (currentBlock, HeldBlock) = (HeldBlock, currentBlock);
+                currentBlock = tmp;
             }
+
             
-            if (holdPress)
+            if (holdPress && !lastMoveHold)
             {
                 HoldBlock();
+                lastMoveHold = true;
             }
             else
             {
-                for (int i = 0; i < GameGrid.Rows; i++) MoveBlockRight();
                 for (int n = 0; n < CurrMax.maxRot; n++) RotateBlockCW();
+                for (int i = 0; i < GameGrid.Rows; i++) MoveBlockRight();
                 for (int i = 0; i < CurrMax.maxPos; i++) MoveBlockLeft();
 
                 DropBlock(GameGrid);
+                lastMoveHold = false;
             }
             
         }
