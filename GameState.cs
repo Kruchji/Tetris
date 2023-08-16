@@ -374,6 +374,9 @@ namespace tetris
         private (int, int, int) FindBestMove()
         {
             (int maxRating, int maxPos, int maxRot) DropValues = (int.MinValue, 0, 0);
+            int[] weights = { 1, 1000, 1, 10, 3, 20 };
+            // { 1, 1000, 1, 3, 3, 20 } -> often bad (level 4), sometimes good (best was level 9)
+            // { 1, 1000, 1, 10, 3, 20 } -> unbeatable, crashes UI at level 13 (best level 89)
 
             // go through all rotations
             for (int n = 0; n < 4; n++)
@@ -397,9 +400,9 @@ namespace tetris
                     int wellCount = TestGrid.WellsCount();
 
 
-                    // TODO: change ratio of rating variables
-                    int moveRating = emptyLines + clearedLines * 1000 + dropDistance - (holeCount * 3 + totalHeightDiff * 3 + wellCount * 20);    // calculate rating of move from these stats
-                    
+                    // calculate rating of move from these stats
+                    int moveRating = emptyLines * weights[0] + clearedLines * weights[1] + dropDistance * weights[2] 
+                                     - (holeCount * weights[3] + totalHeightDiff * weights[4] + wellCount * weights[5]);
 
                     if (DropValues.maxRating < moveRating)
                     {
@@ -419,6 +422,8 @@ namespace tetris
                 RotateBlockCW();
             }
 
+            // for checking ratings in console
+            // Trace.WriteLine(DropValues.maxRating);
             return DropValues;
         }
 
@@ -433,30 +438,22 @@ namespace tetris
             bool holdPress = false;
             (int maxRating, int maxPos, int maxRot) CurrMax = FindBestMove();
 
-
             // try also next block or held block (and apply or revert change)
+            Block tmp = currentBlock;
             if (HeldBlock == null)
             {
-                Block tmp = currentBlock;
                 currentBlock = BlockQueue.NextBlocks[0];
-
-                (int maxRating, int maxPos, int maxRot) PotentialMax = FindBestMove();
-                if (PotentialMax.maxRating > CurrMax.maxRating) holdPress = true;
-
-                currentBlock = tmp;
             }
             else
             {
-                Block tmp = currentBlock;
                 currentBlock = HeldBlock;
-
-                (int maxRating, int maxPos, int maxRot) PotentialMax = FindBestMove();
-                if (PotentialMax.maxRating > CurrMax.maxRating) holdPress = true;
-
-                currentBlock = tmp;
             }
 
-            
+            (int maxRating, int maxPos, int maxRot) PotentialMax = FindBestMove();
+            if (PotentialMax.maxRating > CurrMax.maxRating) holdPress = true;
+
+            currentBlock = tmp;
+
             if (holdPress && !lastMoveHold)
             {
                 HoldBlock();
@@ -471,7 +468,11 @@ namespace tetris
                 DropBlock(GameGrid);
                 lastMoveHold = false;
             }
-            
+
+            // stop computer from crashing UI if it does too well
+            // there are only 10 people in the world who got to level 13 so this should be a good stopping point (https://ch.tetr.io/s/blitz_global)
+            if (DiffLevel == 13) GameOver = true;
+
         }
 
     }
