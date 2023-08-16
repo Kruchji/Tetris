@@ -117,13 +117,33 @@ namespace tetris
                     CurrentBlock.Move(0, -2);
                     if (!BlockFits())
                     {
+                        // special case for I Block -> try moving 2 tiles
+                        if (CurrentBlock.Id == 1)
+                        {
+                            CurrentBlock.Move(0, -1);
+                            if (!BlockFits())
+                            {
+                                CurrentBlock.Move(0, 4);
+                                if (!BlockFits())
+                                {
                         // cant rotate even when shifted to side -> revert back
+                                    CurrentBlock.Move(0, -2);
+                                    CurrentBlock.RotateCCW();
+                                    LastOperationRotation = false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // cant rotate even when shifted to side -> revert back
                         CurrentBlock.Move(0, 1);
                         CurrentBlock.RotateCCW();
                         LastOperationRotation = false;
                     }
+
                 }
             }
+        }
         }
 
         public void RotateBlockCCW()
@@ -139,13 +159,33 @@ namespace tetris
                     CurrentBlock.Move(0, -2);
                     if (!BlockFits())
                     {
+                        // special case for I Block -> try moving 2 tiles
+                        if (CurrentBlock.Id == 1)
+                        {
+                            CurrentBlock.Move(0, -1);
+                            if (!BlockFits())
+                            {
+                                CurrentBlock.Move(0, 4);
+                                if (!BlockFits())
+                                {
                         // cant rotate even when shifted to side -> revert back
+                                    CurrentBlock.Move(0, -2);
+                                    CurrentBlock.RotateCW();
+                                    LastOperationRotation = false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // cant rotate even when shifted to side -> revert back
                         CurrentBlock.Move(0, 1);
                         CurrentBlock.RotateCW();
                         LastOperationRotation = false;
                     }
+                        
                 } 
             }
+        }
         }
 
         // moves left and right if it is possible
