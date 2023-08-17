@@ -40,9 +40,10 @@ namespace tetris
             new BitmapImage(new Uri("Assets/Block-Z.png", UriKind.Relative))
         };
 
-        // music
+        // background music
         private MediaPlayer musicPlayer = new MediaPlayer();
         
+        // types of supported game modes
         private enum GameMode
         {
             solo,
@@ -52,17 +53,20 @@ namespace tetris
 
         private GameMode CurrentGameMode;
 
+        // image controls for drawing grid on screen
         private readonly Image[,] imageControls1;
         private readonly Image[,] imageControls2;
 
-        // new game
+        // new games (over before starting)
         private GameState gameState1 = new GameState(1, false);
         private GameState gameState2 = new GameState(2, false);
 
         public MainWindow()
         {
             InitializeComponent();
-            imageControls1 = SetupGameCanvas(gameState1.GameGrid, gameState1.gameID);    // initialize game canvas
+
+            // initialize game canvases
+            imageControls1 = SetupGameCanvas(gameState1.GameGrid, gameState1.gameID);    
             imageControls2 = SetupGameCanvas(gameState2.GameGrid, gameState2.gameID);
         }
 
@@ -70,7 +74,7 @@ namespace tetris
         private Image[,] SetupGameCanvas(GameGrid grid, int gameID)
         {
             Image[,] imageControls = new Image[grid.Rows, grid.Columns];    // size same as game grid
-            int cellSize = 25;  // 500 px / 20 tiles
+            int cellSize = 25;  // 500 px / 20 tiles = 25 px
 
             for (int r = 0; r < grid.Rows; r++)
             {
@@ -123,7 +127,7 @@ namespace tetris
             }
         }
 
-        // preview next block
+        // preview next 3 blocks
         private void DrawNextBlock(BlockQueue blockQueue, int gameID)
         {
             if (gameID == 1) 
@@ -164,7 +168,7 @@ namespace tetris
 
             foreach (Position p in block.TilePositions())
             {
-                imageControls[p.Row + dropDistance, p.Column].Opacity = 0.25;
+                imageControls[p.Row + dropDistance, p.Column].Opacity = 0.25;   // transparent
                 imageControls[p.Row + dropDistance, p.Column].Source = tileImages[block.Id];
             }
         }
@@ -188,7 +192,7 @@ namespace tetris
             }
         }
 
-        // draws grid, score, current and next block
+        // draws grid, all texts, current, ghost, held block and next 3 blocks
         private void Draw(GameState gameState, Image[,] imageControls)
         {
             DrawGrid(gameState.GameGrid, imageControls);
@@ -204,6 +208,7 @@ namespace tetris
 
         }
 
+        // loops background music (reset to time zero if ended)
         private void Media_Ended(object sender, EventArgs e)
         {
             musicPlayer.Position = TimeSpan.Zero;
@@ -215,22 +220,24 @@ namespace tetris
         private async Task GameLoop(GameState gameState, Image[,] imageControls)
         {
             Draw(gameState, imageControls);
+
+            // play background music (only once at a time)
             if (gameState.gameID == 1)
             {
                 musicPlayer.Open(new Uri("../../../Assets/Theme.wav", UriKind.Relative));
-                musicPlayer.MediaEnded += new EventHandler(Media_Ended);
+                musicPlayer.MediaEnded += new EventHandler(Media_Ended);        // call this method on end -> method starts music again
                 musicPlayer.Play();
             }
 
             await Task.Delay(500);
-            // drop by 1 automatically
+            // drop by 1 automatically and move computer (if required)
             while (!gameState.GameOver)
             {
                 int delay = (int)(500 * Math.Pow(0.6, gameState.DiffLevel - 1));   // set lower delay based on difficulty level (based on: https://tetris.wiki/TETR.IO#Blitz)
                 await Task.Delay(delay);
                 gameState.AutoMoveBlockDown();
                 Draw(gameState, imageControls);
-                await Task.Delay(delay);        // divide delay so computer moves between movement in loop
+                await Task.Delay(delay);        // divide delay so computer moves in between block movement in loop
 
                 // move computer player
                 if (CurrentGameMode == GameMode.computer && !gameState2.GameOver && gameState == gameState2)
@@ -241,9 +248,13 @@ namespace tetris
 
             }
 
-            if (gameState1.GameOver && gameState2.GameOver)     // when both games end -> display game over menu and score
+            // when both games end -> display game over menu and score, stop music, compare with best scores
+            if (gameState1.GameOver && gameState2.GameOver)     
             {
+                // stop background music
                 musicPlayer.Stop();
+
+                // display game over screen
                 GameOverMenu.Visibility = Visibility.Visible;
 
                 // dont display two scores in solo
@@ -254,6 +265,7 @@ namespace tetris
                     FinalScoreText2.Visibility = Visibility.Visible;
                     FinalScoreText2.Text = $"Right Player: {gameState2.Score}";
 
+                    // change color of score depending on which player won
                     if (gameState1.Score > gameState2.Score)
                     {
                         FinalScoreText1.Foreground = Brushes.LawnGreen;
@@ -267,6 +279,7 @@ namespace tetris
                 }
                 else
                 {
+                    // solo mode -> only one score
                     FinalScoreText1.Text = $"{gameState1.Score}";
                     FinalScoreText1.Foreground = Brushes.Gold;
                     FinalScoreText1.FontSize = 35;
@@ -282,9 +295,12 @@ namespace tetris
                     {
                         if (!added && int.Parse(allLines[i].Split(' ')[0]) < gameState1.Score)
                         {
+                            // score is high score
+                            // display window for entering username
                             var dialog = new UserInput();
                             if (dialog.ShowDialog() == true)    // returns when second window is closed
                             {
+                                // register score with user inputted name
                                 newLines[i] = $"{gameState1.Score} {dialog.ResponseText}";
                             }
                             else
@@ -297,6 +313,7 @@ namespace tetris
                         }
                         else
                         {
+                            // if new score was already added -> only shift other scores
                             if (added)
                             {
                                 newLines[i] = allLines[i-1];
@@ -308,48 +325,13 @@ namespace tetris
                             
                         }
                     }
+                    // write new top scores back
                     File.WriteAllLines(@"../../../HighScores.txt", newLines);
                 }
             }
         }
 
-        private void HandleKeyPressesGame2(GameState gameState, KeyEventArgs e, Image[,] imageControls)
-        {
-            if (!gameState.GameOver) // if game has ended -> ignore all keys
-            {
-                bool pressed = true;
-                switch (e.Key)
-                {
-                    case Key.Left:
-                        gameState.MoveBlockLeft();
-                        break;
-                    case Key.Right:
-                        gameState.MoveBlockRight();
-                        break;
-                    case Key.Down:
-                        gameState.MoveBlockDown();
-                        break;
-                    case Key.NumPad2:
-                        gameState.RotateBlockCW();
-                        break;
-                    case Key.NumPad1:
-                        gameState.RotateBlockCCW();
-                        break;
-                    case Key.NumPad3:
-                        gameState.HoldBlock();
-                        break;
-                    case Key.Up:
-                        gameState.DropBlock(gameState.GameGrid);
-                        break;
-                    default:
-                        pressed = false;
-                        break;
-                }
-
-                if (pressed) Draw(gameState, imageControls);      // only redraw if player pressed a key that actually does something
-            }
-        }
-
+        // controls for player 1
         private void HandleKeyPressesGame1(GameState gameState, KeyEventArgs e, Image[,] imageControls)
         {
             if (!gameState.GameOver) // if game has ended -> ignore all keys
@@ -389,8 +371,48 @@ namespace tetris
             }
         }
 
+        // controls for player 2
+        private void HandleKeyPressesGame2(GameState gameState, KeyEventArgs e, Image[,] imageControls)
+        {
+            if (!gameState.GameOver) // if game has ended -> ignore all keys
+            {
+                bool pressed = true;
+                switch (e.Key)
+                {
+                    case Key.Left:
+                        gameState.MoveBlockLeft();
+                        break;
+                    case Key.Right:
+                        gameState.MoveBlockRight();
+                        break;
+                    case Key.Down:
+                        gameState.MoveBlockDown();
+                        break;
+                    case Key.NumPad2:
+                        gameState.RotateBlockCW();
+                        break;
+                    case Key.NumPad1:
+                        gameState.RotateBlockCCW();
+                        break;
+                    case Key.NumPad3:
+                        gameState.HoldBlock();
+                        break;
+                    case Key.Up:
+                        gameState.DropBlock(gameState.GameGrid);
+                        break;
+                    default:
+                        pressed = false;
+                        break;
+                }
+
+                if (pressed) Draw(gameState, imageControls);      // only redraw if player pressed a key that actually does something
+            }
+        }
+
+        // is called on any key press
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
+            // try to handle pressed keys
             HandleKeyPressesGame1(gameState1, e, imageControls1);
             if (CurrentGameMode == GameMode.twoplayer) HandleKeyPressesGame2(gameState2, e, imageControls2);
 
@@ -402,6 +424,7 @@ namespace tetris
             // create new game, hide game over overlay
             GameOverMenu.Visibility = Visibility.Hidden;
 
+            // start a new game based on current gamemode
             switch (CurrentGameMode)
             {
                 case GameMode.solo:
@@ -425,13 +448,14 @@ namespace tetris
 
         }
 
+        // go back to main menu
         private void MainMenu_Click(object sender, RoutedEventArgs e)
         {
             GameOverMenu.Visibility = Visibility.Hidden;
             Leaderboards.Visibility = Visibility.Hidden;
             MainMenu.Visibility = Visibility.Visible;
 
-            Application.Current.MainWindow.MinWidth = 800;
+            Application.Current.MainWindow.MinWidth = 800;  // allow smaller window size
         }
 
         private void QuitButton_Click(object sender, RoutedEventArgs e)
@@ -439,6 +463,7 @@ namespace tetris
             Application.Current.Shutdown();     // close game with quit button
         }
 
+        // restore two boards game layout
         private void RestoreDoubleBoards()
         {
             WholeGameGrid.ColumnDefinitions[3].Width = new GridLength(1, GridUnitType.Star);
@@ -448,9 +473,10 @@ namespace tetris
             if (Application.Current.MainWindow.Width < 1200) Application.Current.MainWindow.Width = 1200;
         }
 
+        // start two player game
         private async void DoubleButton_Click(object sender, RoutedEventArgs e)
         {
-            // create new game, hide game over overlay
+            // create new games, hide game over overlay
             gameState1 = new GameState(1, true);
             gameState2 = new GameState(2, true);
             MainMenu.Visibility = Visibility.Hidden;
@@ -458,9 +484,11 @@ namespace tetris
 
             RestoreDoubleBoards();
 
-            await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2)); // run new game
+            // start loop of both games, task waits for both to finish
+            await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2));
         }
 
+        // start one player game
         private async void SoloButton_Click(object sender, RoutedEventArgs e)
         {
             // create new game, hide game over overlay
@@ -468,6 +496,7 @@ namespace tetris
             MainMenu.Visibility = Visibility.Hidden;
             CurrentGameMode = GameMode.solo;
 
+            // hide second game grid
             WholeGameGrid.ColumnDefinitions[3].Width = new GridLength(0, GridUnitType.Pixel);
             WholeGameGrid.ColumnDefinitions[4].Width = new GridLength(0, GridUnitType.Pixel);
             WholeGameGrid.ColumnDefinitions[5].Width = new GridLength(0, GridUnitType.Pixel);
@@ -477,6 +506,7 @@ namespace tetris
 
         }
 
+        // start game vs computer
         private async void ComputerButton_Click(object sender, RoutedEventArgs e)
         {
             CurrentGameMode = GameMode.computer;
@@ -489,12 +519,15 @@ namespace tetris
             await Task.WhenAll(GameLoop(gameState1, imageControls1), GameLoop(gameState2, imageControls2));
         }
 
+        // display leaderboards
         private void LeaderboardsButton_Click(object sender, RoutedEventArgs e)
         {
             Leaderboards.Visibility = Visibility.Visible;
             MainMenu.Visibility = Visibility.Hidden;
 
             var allHighscores = File.ReadAllLines(@"../../../HighScores.txt");
+
+            // scores are in format: score username; so we are splitting by first space
             LeadPos1.Text = $"{allHighscores[0].Substring(allHighscores[0].Split(' ')[0].Length)}:  {allHighscores[0].Split(' ')[0]}";
             LeadPos2.Text = $"{allHighscores[1].Substring(allHighscores[1].Split(' ')[0].Length)}:  {allHighscores[1].Split(' ')[0]}";
             LeadPos3.Text = $"{allHighscores[2].Substring(allHighscores[2].Split(' ')[0].Length)}:  {allHighscores[2].Split(' ')[0]}";

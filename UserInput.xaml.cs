@@ -11,6 +11,8 @@ namespace tetris.Previews
         {
             InitializeComponent();
         }
+
+        // inputted username
         public string ResponseText
         {
             get { return ResponseTextBox.Text; }
@@ -19,7 +21,7 @@ namespace tetris.Previews
 
         private void OKButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            DialogResult = true;
+            DialogResult = true;    // tells MainWindow if user entered username or closed this window
         }
     }
 }
