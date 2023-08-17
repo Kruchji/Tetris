@@ -33,10 +33,15 @@ namespace tetris
         {
             NextBlocks = new List<Block>();
 
-            // generate first 3 blocks to queue
+            // generate first 3 blocks to queue, don't repeat same block twice
+            int lastBlockId = 0;
             for (int i = 0; i < 3; i++)
             {
-                NextBlocks.Add(RandomBlock());
+                Block newBlock = RandomBlock();
+                while (newBlock.Id == lastBlockId) newBlock = RandomBlock();
+
+                NextBlocks.Add(newBlock);
+                lastBlockId = newBlock.Id;
             }
         }
 
@@ -53,7 +58,6 @@ namespace tetris
                 NextBlocks.RemoveAt(2);
                 NextBlocks.Add(RandomBlock());
             }
-            while(NextBlocks[1].Id == NextBlocks[2].Id);
 
             return block;
         }
