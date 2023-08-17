@@ -22,17 +22,17 @@ namespace tetris
         protected abstract Position[][] Tiles { get; }
 
         // where block spawns in the grid
-        protected abstract Position StartOffset { get; }
+        protected abstract Position startOffset { get; }
 
-        // id to distinguish blocks, 0 means empty
+        // id to distinguish blocks, 0 means empty tile
         public abstract int Id { get; }
 
         private int rotationState;  // how the block is rotated
-        public Position offset { get; } // determines position of the block
+        public Position offset { get; } // contains current position of the block
 
         public Block()
         {
-            offset = new Position(StartOffset.Row, StartOffset.Column); // place block on starting position
+            offset = new Position(startOffset.Row, startOffset.Column); // place block on starting position
         }
 
         // get tiles occupied by block in its current rotation and position
@@ -40,7 +40,9 @@ namespace tetris
         {
             foreach (Position p in Tiles[rotationState])    // loop over tile positions
             {
-                yield return new Position(p.Row + offset.Row, p.Column + offset.Column);    // yield = provide the next value in iteration
+                yield return new Position(p.Row + offset.Row, p.Column + offset.Column);
+                // yield = provide the next value in iteration
+                // when used loop over TilePositions()
             }
         }
 
@@ -69,12 +71,12 @@ namespace tetris
             offset.Column += columns;
         }
 
-        // resets rotation and position
+        // resets rotation and position to starting state
         public void Reset()
         {
             rotationState = 0;
-            offset.Row = StartOffset.Row;
-            offset.Column = StartOffset.Column;
+            offset.Row = startOffset.Row;
+            offset.Column = startOffset.Column;
         }
     }
 
@@ -91,7 +93,7 @@ namespace tetris
         };
 
         public override int Id => 1;
-        protected override Position StartOffset => new Position(-1, 3);     // top row in the middle
+        protected override Position startOffset => new Position(-1, 3);     // top row in the middle
         protected override Position[][] Tiles => tiles;
     }
 
@@ -108,7 +110,7 @@ namespace tetris
         };
 
         public override int Id => 2;
-        protected override Position StartOffset => new Position(0, 3);     // top row in the middle
+        protected override Position startOffset => new Position(0, 3);     // top row in the middle
         protected override Position[][] Tiles => tiles;
     }
 
@@ -125,7 +127,7 @@ namespace tetris
         };
 
         public override int Id => 3;
-        protected override Position StartOffset => new Position(0, 3);     // top row in the middle
+        protected override Position startOffset => new Position(0, 3);     // top row in the middle
         protected override Position[][] Tiles => tiles;
     }
 
@@ -138,7 +140,7 @@ namespace tetris
         };
 
         public override int Id => 4;
-        protected override Position StartOffset => new Position(0, 4);     // top row in the middle
+        protected override Position startOffset => new Position(0, 4);     // top row in the middle
         protected override Position[][] Tiles => tiles;
     }
 
@@ -155,7 +157,7 @@ namespace tetris
         };
 
         public override int Id => 5;
-        protected override Position StartOffset => new Position(0, 3);     // top row in the middle
+        protected override Position startOffset => new Position(0, 3);     // top row in the middle
         protected override Position[][] Tiles => tiles;
     }
 
@@ -172,7 +174,7 @@ namespace tetris
         };
 
         public override int Id => 6;
-        protected override Position StartOffset => new Position(0, 3);     // top row in the middle
+        protected override Position startOffset => new Position(0, 3);     // top row in the middle
         protected override Position[][] Tiles => tiles;
     }
 
@@ -189,7 +191,7 @@ namespace tetris
         };
 
         public override int Id => 7;
-        protected override Position StartOffset => new Position(0, 3);     // top row in the middle
+        protected override Position startOffset => new Position(0, 3);     // top row in the middle
         protected override Position[][] Tiles => tiles;
     }
 
