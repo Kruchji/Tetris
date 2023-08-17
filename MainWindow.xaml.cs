@@ -385,6 +385,7 @@ namespace tetris
                     case Key.K:
                         gameState.HoldBlock();
                         break;
+                    case Key.W:
                     case Key.Space:
                         gameState.DropBlock(gameState.GameGrid);
                         break;
