@@ -17,16 +17,19 @@ namespace tetris
             get => grid[r, c];
             set => grid[r, c] = value;
         }
-
+        
+        // initialize with specified number of rows and columns
         public GameGrid(int rows, int columns)
         {
             Rows = rows;
             Columns = columns;
             grid = new int[rows, columns];
         }
-        public object Clone()
+
+        // creates a clone of current game grid and returns it
+        public object DeepCopy()
         {
-            // create new grid and copy this grid content into it
+            // create new grid and copy this grid's content into it
             GameGrid NewGrid = new GameGrid(Rows, Columns);
             for (int r = 0; r < Rows; r++)
             {
@@ -38,7 +41,7 @@ namespace tetris
             return NewGrid;
         }
 
-        // checks if given row and column is inside the grid
+        // checks if given row and column are inside the grid
         public bool IsInside(int r, int c)
         {
             return r >= 0 && r < Rows && c >= 0 && c < Columns;
@@ -60,7 +63,7 @@ namespace tetris
             return true;
         }
 
-        // checks if row is completely empty
+        // checks if a row is completely empty
         public bool IsRowEmpty(int r)
         {
             for (int c = 0; c < Columns; c++)
@@ -94,7 +97,7 @@ namespace tetris
         {
             int cleared = 0;
 
-            for (int r = Rows - 1; r >= 0; r--)
+            for (int r = Rows - 1; r >= 0; r--)     // checks from bottom -> we can move rows down at the same time
             {
                 if (IsRowFull(r))   // clear full row
                 {
@@ -110,20 +113,22 @@ namespace tetris
             return cleared;
         }
 
-        // counts holes in one column
+        // ############################### Methods for computer evaluation ###############################
+
+        // counts holes in one column, holes are empty tiles below non-empty cells
         private int HolesInColumn(int c)
         {
-            bool firstTile = false;
+            bool firstTile = false;     // first non empty tile
             int holes = 0;
             for (int r = 0; r < Rows; r++)
             {
-                if (grid[r, c] == 0 && firstTile) holes++;
-                if (grid[r, c] != 0 && !firstTile) firstTile = true;
+                if (grid[r, c] == 0 && firstTile) holes++;                  // empty tile below non empty tile
+                if (grid[r, c] != 0 && !firstTile) firstTile = true;        // found first non empty tile
             }
             return holes;
         }
 
-        // counts holes in the board, holes are empty tiles below non-empty cells
+        // counts holes in the board
         public int HolesInBoard()
         {
             int holes = 0;
@@ -158,6 +163,7 @@ namespace tetris
             return totalDiffSum;
         }
 
+        // counts wells (or very big imbalance between column heights)
         public int WellsCount()
         {
             int wells = 0;
@@ -177,6 +183,7 @@ namespace tetris
             return wells;
         }
 
+        // returns number of lines that would be cleared
         public int NumberOfFullLines()
         {
             int full = 0;
@@ -187,6 +194,7 @@ namespace tetris
             return full;
         }
 
+        // returns number of lines that are completely empty
         public int NumberOfEmptyLines()
         {
             int empty = 0;

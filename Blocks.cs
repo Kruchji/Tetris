@@ -35,15 +35,11 @@ namespace tetris
             offset = new Position(startOffset.Row, startOffset.Column); // place block on starting position
         }
 
-        // get tiles occupied by block in its current rotation and position
-        public IEnumerable<Position> TilePositions()
+        // moves block by given number of rows and columns
+        public void Move(int rows, int columns)
         {
-            foreach (Position p in Tiles[rotationState])    // loop over tile positions
-            {
-                yield return new Position(p.Row + offset.Row, p.Column + offset.Column);
-                // yield = provide the next value in iteration
-                // when used loop over TilePositions()
-            }
+            offset.Row += rows;
+            offset.Column += columns;
         }
 
         // rotations in both directions
@@ -64,19 +60,23 @@ namespace tetris
             }
         }
 
-        // moves block by given number of rows and columns
-        public void Move(int rows, int columns)
-        {
-            offset.Row += rows;
-            offset.Column += columns;
-        }
-
         // resets rotation and position to starting state
         public void Reset()
         {
             rotationState = 0;
             offset.Row = startOffset.Row;
             offset.Column = startOffset.Column;
+        }
+
+        // get tiles occupied by block in its current rotation and position
+        public IEnumerable<Position> TilePositions()
+        {
+            foreach (Position p in Tiles[rotationState])    // loop over tile positions
+            {
+                yield return new Position(p.Row + offset.Row, p.Column + offset.Column);
+                // yield = provide the next value in iteration
+                // when used loop over TilePositions()
+            }
         }
     }
 

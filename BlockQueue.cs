@@ -46,7 +46,7 @@ namespace tetris
         }
 
         // returns the next block, removes it and generates a new one
-        public Block GetAndUpdate()
+        public Block GetNextAndUpdate()
         {
             Block block = NextBlocks[0];
             NextBlocks.RemoveAt(0);

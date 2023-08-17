@@ -4,9 +4,12 @@ namespace tetris
 {
     public class GameState
     {
+        // holds current block
         private Block currentBlock;
 
-        public Block CurrentBlock           // TODO: change name (from capital C)
+        // used for changing currentBlock -> automatically resets it's position to start at the top again
+        // useful for holding/swapping blocks
+        public Block CurrentBlock
         {
             get => currentBlock;
 
@@ -29,15 +32,18 @@ namespace tetris
             }
         }
 
+        // create new grid and queue
         public GameGrid GameGrid { get; }
         public BlockQueue BlockQueue { get; }
+
+        // for checking if game is over outside of this class
         public bool GameOver { get; private set; }
 
         // scoring, based on: https://tetris.wiki/Scoring
         public int Score { get; private set; } = 0;
         private readonly int[] ClearedScoring = {0, 100, 300, 500, 800};    // added score by how many rows were cleared
         private readonly int[] TSpinScoring = { 400, 800, 1200, 1600 };
-        public int Combo { get; private set; } = -1;
+        public int Combo { get; private set; } = -1;                        // starts at -1 so that no combo is counted on one row completion
         bool LastOperationRotation = false; // for detecting T-Spins
 
         // difficulty level
@@ -58,12 +64,12 @@ namespace tetris
 
         public GameState(int gameID, bool started)
         {
-            GameGrid = new GameGrid(22, 10); // tetris board is 20x10, added two extra invisible rows at the top
+            GameGrid = new GameGrid(22, 10); // tetris board is 20x10, added two extra invisible rows at the top for placing blocks
             BlockQueue = new BlockQueue();
-            CurrentBlock = BlockQueue.GetAndUpdate();
+            CurrentBlock = BlockQueue.GetNextAndUpdate();
             CanHold = true;     // held block is empty at start
             this.gameID = gameID;
-            GameOver = !started;    // set game over to true on not started game
+            GameOver = !started;    // set game over to true on not started game (used when first creating window)
         }
 
         // checks if the current block is in a legal position (empty space inside board)
@@ -77,6 +83,7 @@ namespace tetris
             return true;
         }
 
+        // try to put block into hold box
         public void HoldBlock()
         {
             if (!CanHold) return;
@@ -84,7 +91,7 @@ namespace tetris
             if (HeldBlock == null)  // not holding anything
             {
                 HeldBlock = CurrentBlock;
-                CurrentBlock = BlockQueue.GetAndUpdate();
+                CurrentBlock = BlockQueue.GetNextAndUpdate();
             }
             else
             {
@@ -96,7 +103,8 @@ namespace tetris
             CanHold = false;    // prevents spamming hold
         }
 
-        // rotates the block if it is possible
+        // rotates the block clockwise if possible
+        // also tries to place block slightly to the left or right -> controls are then much more fluent
         public void RotateBlockCW()
         {
             CurrentBlock.RotateCW();
@@ -118,7 +126,7 @@ namespace tetris
                                 CurrentBlock.Move(0, 4);
                                 if (!BlockFits())
                                 {
-                                    // cant rotate even when shifted to side -> revert back
+                                    // cant rotate even when shifted to sides -> revert back
                                     CurrentBlock.Move(0, -2);
                                     CurrentBlock.RotateCCW();
                                     LastOperationRotation = false;
@@ -127,7 +135,7 @@ namespace tetris
                         }
                         else
                         {
-                            // cant rotate even when shifted to side -> revert back
+                            // cant rotate even when shifted to sides -> revert back
                             CurrentBlock.Move(0, 1);
                             CurrentBlock.RotateCCW();
                             LastOperationRotation = false;
@@ -138,6 +146,7 @@ namespace tetris
             }
         }
 
+        // rotates block counter-clockwise if possible
         public void RotateBlockCCW()
         {
             CurrentBlock.RotateCCW();
@@ -180,7 +189,7 @@ namespace tetris
             }
         }
 
-        // moves left and right if it is possible
+        // moves block left if possible
         public void MoveBlockLeft()
         {
             CurrentBlock.Move(0, -1);
@@ -195,6 +204,7 @@ namespace tetris
             }
         }
 
+        // moves block left if possible
         public void MoveBlockRight()
         {
             CurrentBlock.Move(0, 1);
@@ -209,7 +219,7 @@ namespace tetris
             }
         }
 
-        // checks if the game is over by checking if a block is offscreen at the top
+        // checks if the game is over by checking if any block is offscreen at the top
         private bool IsGameOver()
         {
             return !(GameGrid.IsRowEmpty(0) && GameGrid.IsRowEmpty(1));     // top two offscreen rows
@@ -224,6 +234,7 @@ namespace tetris
                 grid[p.Row, p.Column] = CurrentBlock.Id;
             }
 
+            // clear rows and get number of cleared for score calculation
             int rowsCleared = grid.ClearFullRows();
 
             // update difficulty level
@@ -237,6 +248,7 @@ namespace tetris
             // T-Spin scoring
             if (CurrentBlock.Id == 6 && LastOperationRotation)   // is a T-Block and was just rotated
             {
+                // check if corner tiles are full or empty
                 int fullEdgeTiles = 0;
                 if (grid.IsInside(CurrentBlock.offset.Row, CurrentBlock.offset.Column)) 
                 {
@@ -258,7 +270,7 @@ namespace tetris
                 // if at least 3 edge tiles are non empty -> is T-Spin
                 if (fullEdgeTiles >= 3)
                 {
-                    Score += (TSpinScoring[rowsCleared] * DiffLevel) - (ClearedScoring[rowsCleared] * DiffLevel);
+                    Score += (TSpinScoring[rowsCleared] * DiffLevel) - (ClearedScoring[rowsCleared] * DiffLevel);    // removing score for normal row completion
                 }
             }
 
@@ -268,7 +280,7 @@ namespace tetris
             if (rowsCleared > 0)
             {
                 Combo++;
-                Score += 50 * Combo * DiffLevel;    // 50 * combo counter is the number of points awarded on line clear -> that's why combo starts at -1
+                Score += 50 * Combo * DiffLevel;    // 50 * combo counter * level is the number of points awarded on line clear -> that's why combo starts at -1
             }
             else
             {
@@ -282,7 +294,7 @@ namespace tetris
             }
             else
             {
-                CurrentBlock = BlockQueue.GetAndUpdate();
+                CurrentBlock = BlockQueue.GetNextAndUpdate();
                 LastOperationRotation = false;
                 CanHold = true;     // enable pressing hold again
             }
@@ -321,7 +333,7 @@ namespace tetris
             return drop;
         }
 
-        // get drop distance of whole block (by taking minimum of all it's tiles)
+        // get drop distance of the whole block (by taking minimum drop distance of all of it's tiles)
         public int BlockDropDistance()
         {
             int drop = GameGrid.Rows;
@@ -334,7 +346,7 @@ namespace tetris
             return drop;
         }
 
-        // move current block down as many rows as possible and places it
+        // moves current block down as many rows as possible and places it
         public void DropBlock(GameGrid grid)
         {
             int dropDistance = BlockDropDistance();
@@ -342,10 +354,15 @@ namespace tetris
             CurrentBlock.Move(dropDistance, 0);
             PlaceBlock(grid);
 
+            // play drop sound effect
             musicPlayer.Play();
+
             LastOperationRotation = false;
         }
 
+        // #################################### Computer movement ####################################
+
+        // places block by only reflecting it on the grid (doesn't affect score, next block, ...)
         private void TestPlaceBlock(GameGrid grid)
         {
             // add block to grid
@@ -355,20 +372,25 @@ namespace tetris
             }
         }
 
+        // drops block without actually placing it
         public int TestDropBlock(GameGrid grid)
         {
             int dropDistance = BlockDropDistance();
-            CurrentBlock.Move(dropDistance, 0);         // TODO: change current block handling for tests
+            CurrentBlock.Move(dropDistance, 0);
             TestPlaceBlock(grid);
             return dropDistance;
         }
 
+        // finds best rated move for CurrentBlock
         private (int, int, int) FindBestMove()
         {
+            // maxPos, maxRot -> will contain move inputs to replicate move with max rating
             (int maxRating, int maxPos, int maxRot) DropValues = (int.MinValue, 0, 0);
+
+            // weights used in calculation of rating (check below)
             int[] weights = { 1, 1000, 1, 10, 3, 20 };
-            // { 1, 1000, 1, 3, 3, 20 } -> often bad (level 4), sometimes good (best was level 9)
-            // { 1, 1000, 1, 10, 3, 20 } -> unbeatable, crashes UI at level 13 (best level 89)
+            // { 1, 1000, 1, 3, 3, 20 } -> often bad (level 4), sometimes good (best level 9)
+            // { 1, 1000, 1, 10, 3, 20 } -> almost unbeatable, freezes UI at level 13 (best level 89)
 
             // go through all rotations
             for (int n = 0; n < 4; n++)
@@ -381,21 +403,22 @@ namespace tetris
                     int dropDistance = BlockDropDistance();             // how low block falls, bigger is better
 
                     // clone grid and try to drop block
-                    GameGrid TestGrid = (GameGrid)GameGrid.Clone();
+                    GameGrid TestGrid = (GameGrid)GameGrid.DeepCopy();
                     int droppedDistance = TestDropBlock(TestGrid);
 
                     int emptyLines = TestGrid.NumberOfEmptyLines();      // number of lines of empty space, bigger is better
                     int clearedLines = TestGrid.NumberOfFullLines();     // number of lines that would be cleared, bigger is better
 
-                    int holeCount = TestGrid.HolesInBoard();        // how many empty tiles below non-empty tile, smaller is better
+                    int holeCount = TestGrid.HolesInBoard();            // how many empty tiles below non-empty tile, smaller is better
                     int totalHeightDiff = TestGrid.ColsHeightDiff();    // sum of differences in height of neighbouring columns, smaller is better
-                    int wellCount = TestGrid.WellsCount();
+                    int wellCount = TestGrid.WellsCount();              // number of wells, smaller is better
 
 
                     // calculate rating of move from these stats
                     int moveRating = emptyLines * weights[0] + clearedLines * weights[1] + dropDistance * weights[2] 
                                      - (holeCount * weights[3] + totalHeightDiff * weights[4] + wellCount * weights[5]);
 
+                    // register best move if it's rating is better then previous best
                     if (DropValues.maxRating < moveRating)
                     {
                         DropValues.maxRating = moveRating;
@@ -403,12 +426,14 @@ namespace tetris
                         DropValues.maxPos = i;
                     }
 
+                    // revert back changes to grid and CurrentBlock
                     foreach (Position p in CurrentBlock.TilePositions())
                     {
                         TestGrid[p.Row, p.Column] = 0;
                     }
                     CurrentBlock.Move(-droppedDistance, 0);
 
+                    // move onto next position to rate
                     MoveBlockLeft();
                 }
                 RotateBlockCW();
@@ -416,6 +441,7 @@ namespace tetris
 
             // for checking ratings in console
             // Trace.WriteLine(DropValues.maxRating);
+
             return DropValues;
         }
 
@@ -427,7 +453,10 @@ namespace tetris
         // finds next computer move and executes it
         public void MoveComputer()
         {
+            // does computer want to press hold this turn
             bool holdPress = false;
+
+            // get rating of CurrentBlock
             (int maxRating, int maxPos, int maxRot) CurrMax = FindBestMove();
 
             // try also next block or held block (and apply or revert change)
@@ -446,6 +475,7 @@ namespace tetris
 
             currentBlock = tmp;
 
+            // press hold if better rating is not with CurrentBlock
             if (holdPress && !lastMoveHold)
             {
                 HoldBlock();
@@ -453,6 +483,7 @@ namespace tetris
             }
             else
             {
+                // otherwise execute best move
                 for (int n = 0; n < CurrMax.maxRot; n++) RotateBlockCW();
                 for (int i = 0; i < GameGrid.Rows; i++) MoveBlockRight();
                 for (int i = 0; i < CurrMax.maxPos; i++) MoveBlockLeft();
@@ -461,8 +492,8 @@ namespace tetris
                 lastMoveHold = false;
             }
 
-            // stop computer from crashing UI if it does too well
-            // there are only 10 people in the world who got to level 13 so this should be a good stopping point (https://ch.tetr.io/s/blitz_global)
+            // stop computer from freezing UI if it does too well
+            // there are only 10 people in the world who got to level 13 in blitz so this should be a good stopping point (https://ch.tetr.io/s/blitz_global)
             if (DiffLevel == 13) GameOver = true;
 
         }
