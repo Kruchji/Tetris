@@ -17,7 +17,7 @@ namespace tetris
             new ZBlock()
         };
 
-        private readonly Random random = new Random(Guid.NewGuid().GetHashCode());  // more random board for 2 players
+        private readonly Random random = new Random(Guid.NewGuid().GetHashCode());  // more randomness for first block in games started at the same time (two player mode)
 
         // preview of the next coming blocks
         public List<Block> NextBlocks { get; private set; }
@@ -28,6 +28,7 @@ namespace tetris
             return blocks[random.Next(blocks.Length)];
         }
 
+        // initialize by generating next 3 blocks
         public BlockQueue()
         {
             NextBlocks = new List<Block>();
@@ -39,7 +40,7 @@ namespace tetris
             }
         }
 
-        // returns the next block (and updates it with a new one)
+        // returns the next block, removes it and generates a new one
         public Block GetAndUpdate()
         {
             Block block = NextBlocks[0];
@@ -47,7 +48,7 @@ namespace tetris
             NextBlocks.Add(RandomBlock());
 
             // pick a new block different from previous
-            do
+            while(NextBlocks[1].Id == NextBlocks[2].Id)
             {
                 NextBlocks.RemoveAt(2);
                 NextBlocks.Add(RandomBlock());
