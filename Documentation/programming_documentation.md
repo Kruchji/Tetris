@@ -65,3 +65,9 @@ Ovládání hry řeší metody HandleKeyPressesGame1/2, které jsou volané z m
 ### 6) UserInput.xaml(.cs)
 
 Tyto poslední dva soubory pouze zobrazují jednoduché okno pro zadání uživatelského jména s tlačítkem OK. Menší změna nastane pouze tehdy, když uživatel okno zavře místo zadání jména – pak je do žebříčku zapsán jako anonymní uživatel.
+
+## Závěr
+
+Program v tomto stavu má většinu funkcionality, kterou jsem se předem rozhodl udělat. Zvažoval jsem ještě lepší detekci T-Spinů (program nyní detekuje jen zjednodušenou definici toho, co je považováno za T-Spin), popř. mini T-Spinů, nebo také vylepšení ovládání (program má problém u hry 2 hráčů, když jeden z nich drží klávesu).
+
+Obecně je ale u Tetrisu ještě mnohem více věcí, co by šlo dále přidávat. Např. u počítačového hráče povolit vybírání obtížnosti zobrazování jeho vstupů postupně. Bylo by také možné přidat další typy herních módů, u kterých by se ale musel předělat systém skóre, popř. změnit Vs mód tak, aby oba hráči měli stejnou frontu následujících kostek. Nakonec také hezké animace by hru vylepšili, ale na to podle mě není WPF úplně stavěno. 
