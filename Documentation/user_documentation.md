@@ -1,12 +1,12 @@
 # Uživatelská dokumentace ke hře Tetris
 
-Program umožňuje hrát základní verzi hry Tetris. Cílem hry je získat co nejvyššího skóre pokládáním kostek (tetromino) na herní plochu (20 x 10) a zaplněním celých řad. Hra končí, když se další kostka již nevejde shora na herní plochu.
+Program umožňuje hrát základní verzi hry Tetris. Cílem hry je získat co nejvyšší skóre pokládáním kostek (tetromino) na herní plochu (20 x 10) a plněním celých řad. Hra končí, když se další kostka již nevejde shora na herní plochu.
 
 ### 1) Hlavní menu
 
 Po spuštění programu se objeví hlavní menu, na kterém lze kliknout na jedno z pěti tlačítek: 
 
-- **1 Player** spustí hru Tetrisu s jedním hráčem.
+- **1 Player** spustí hru Tetrisu s jedním hráčem
 - **2 Players** spustí hru dvou hráčů
 - **Vs Computer** spustí hru proti počítači
 - **Leaderboards** zobrazí žebříček nejlepších skóre
