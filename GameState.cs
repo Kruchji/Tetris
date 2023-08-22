@@ -389,7 +389,9 @@ namespace tetris
 
             // weights used in calculation of rating (check below)
             int[] weights = { 1, 1000, 1, 10, 3, 20 };
-            // { 1, 1000, 1, 3, 3, 20 } -> often bad (level 4), sometimes good (best level 9)
+            // { 10, 1000, 1, 5, 5, 20 } -> around level 6
+            // { 10, 1000, 1, 1, 7, 10 } -> around level 4
+            // { 1, 1000, 1, 3, 3, 20 } -> often bad (level 6), sometimes good (best level 9)
             // { 1, 1000, 1, 10, 3, 20 } -> almost unbeatable, freezes UI at level 13 (best level 89)
 
             // go through all rotations
